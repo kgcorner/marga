@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Marga — Call Graph</title>
+    <style>
+        :root {
+            --bg: #f6f6f4; --panel: #ffffff; --text: #1d1d1f; --muted: #6b6b72;
+            --border: #e1e1de; --edge: #c9c9c6; --highlight: #e8940c; --entry: #d6283f;
+        }
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg: #15161a; --panel: #1e1f24; --text: #e7e7ea; --muted: #9a9aa3;
+                --border: #2d2e35; --edge: #3a3b44; --highlight: #f5a524; --entry: #ff5468;
+            }
+        }
+        * { box-sizing: border-box; }
+        html, body { margin: 0; height: 100%; }
+        body {
+            display: grid; grid-template-rows: auto 1fr; grid-template-columns: 1fr 340px;
+            height: 100vh; background: var(--bg); color: var(--text);
+            font: 13px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        }
+        header {
+            grid-column: 1 / -1; display: flex; align-items: center; gap: 14px;
+            padding: 10px 16px; background: var(--panel); border-bottom: 1px solid var(--border);
+        }
+        header h1 { margin: 0; font-size: 16px; letter-spacing: .3px; }
+        header .stats { color: var(--muted); }
+        header .spacer { flex: 1; }
+        header input[type=search] {
+            width: 320px; padding: 6px 10px; border-radius: 6px; font: inherit;
+            border: 1px solid var(--border); background: var(--bg); color: var(--text);
+        }
+        header button, aside button.link { font: inherit; color: var(--text); background: transparent; cursor: pointer; }
+        header button { padding: 6px 12px; border: 1px solid var(--border); border-radius: 6px; }
+        #cy { position: relative; min-height: 0; min-width: 0; }
+        #overlay {
+            position: absolute; inset: 0; display: grid; place-items: center; padding: 24px; text-align: center;
+            background: var(--bg); color: var(--muted); font-size: 14px; z-index: 5;
+        }
+        #overlay[hidden] { display: none; }
+        aside { overflow: auto; padding: 16px; background: var(--panel); border-left: 1px solid var(--border); }
+        aside h2 { margin: 0 0 4px; font-size: 15px; overflow-wrap: anywhere; }
+        aside h3 { margin: 18px 0 6px; font-size: 12px; text-transform: uppercase; letter-spacing: .6px; color: var(--muted); }
+        aside .muted { color: var(--muted); overflow-wrap: anywhere; }
+        aside .note { margin-top: 8px; padding: 6px 8px; border-radius: 6px; background: var(--bg); color: var(--muted); }
+        aside ul { list-style: none; margin: 0; padding: 0; }
+        aside li { margin: 2px 0; }
+        aside button.link { width: 100%; text-align: left; padding: 5px 8px; border: 0; border-radius: 5px; overflow-wrap: anywhere; }
+        aside button.link:hover { background: var(--bg); }
+        .badge { display: inline-block; margin-top: 6px; padding: 1px 8px; border-radius: 10px; background: var(--entry); color: #fff; font-size: 11px; }
+        .legend div { display: flex; align-items: center; gap: 8px; margin: 4px 0; }
+        .swatch { width: 14px; height: 14px; border-radius: 3px; border: 2px solid; }
+        .dot { width: 10px; height: 10px; border-radius: 50%; }
+        .diamond { width: 10px; height: 10px; transform: rotate(45deg); }
+        .dash { width: 18px; border-top: 2px dashed var(--muted); }
+        .dots { width: 18px; border-top: 2px dotted var(--muted); }
+        .hier { width: 18px; border-top: 2px solid #9b6dff; position: relative; }
+        .ghost { width: 14px; height: 14px; border-radius: 3px; border: 2px dotted #80808a; opacity: .5; }
+        .dashbox { width: 14px; height: 14px; border-radius: 3px; border: 2px dashed #80808a; }
+        header label { color: var(--muted); display: flex; align-items: center; gap: 6px; cursor: pointer; }
+        .badge.info { background: var(--border); color: var(--text); }
+        .ring { width: 12px; height: 12px; border-radius: 50%; border: 3px solid #22c55e; }
+        #impact-btn[hidden] { display: none; }
+        aside .file { color: var(--muted); font-size: 12px; padding: 2px 8px; overflow-wrap: anywhere; }
+    </style>
+</head>
+<body>
+<header>
+    <h1>Marga</h1>
+    <span class="stats" id="stats">Loading…</span>
+    <span class="spacer"></span>
+    <input id="search" type="search" placeholder="Search method, Class or Class.method" disabled>
+    <label title="Beans switched off by the active profiles"><input id="show-inactive" type="checkbox"> Show inactive beans</label>
+    <button id="impact-btn" type="button" hidden>Change impact</button>
+    <button id="reset" type="button">Reset</button>
+</header>
+<div id="cy"><div id="overlay">Loading graph data…</div></div>
+<aside id="panel"></aside>
+
+<script>
+    /*__CYTOSCAPE_JS__*/
+</script>
+<script>
+    /* ========================================================================
+     * Data loading: each data/*.js file calls Marga.receive(name, payload).
+     * Script tags (unlike fetch) also work when the report is opened via file://
+     * ====================================================================== */
+    window.Marga = (() => {
+        const received = new Map();
+        const waiting = new Map();
+
+        function receive(name, payload) {
+            received.set(name, payload);
+            const w = waiting.get(name);
+            if (w) { waiting.delete(name); w.resolve(payload); }
+        }
+
+        function load(name) {
+            if (received.has(name)) return Promise.resolve(received.get(name));
+            if (waiting.has(name)) return waiting.get(name).promise;
+            const w = {};
+            w.promise = new Promise((resolve, reject) => { w.resolve = resolve; w.reject = reject; });
+            waiting.set(name, w);
+            const script = document.createElement('script');
+            script.src = `data/${name}.js`;
+            script.onerror = () => { waiting.delete(name); w.reject(new Error(`Cannot load data/${name}.js`)); };
+            script.onload = () => script.remove();
+            document.head.appendChild(script);
+            return w.promise;
+        }
+
+        return { receive, load };
+    })();
+
+    (function () {
+        const FORMAT_VERSION = 2;
+        const FULL_RENDER_LIMIT = 5000;   // above this many methods, only slices are drawn
+        const SLICE_LIMIT = 1500;         // max methods drawn for one caller slice
+
+        // ---------------------------------------------------------------- model
+        const G = {};
+
+        function bytes(b64) {
+            if (Uint8Array.fromBase64) return Uint8Array.fromBase64(b64);
+            const bin = atob(b64);
+            const out = new Uint8Array(bin.length);
+            for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+            return out;
+        }
+        const i32 = b64 => { const b = bytes(b64); return new Int32Array(b.buffer, b.byteOffset, b.byteLength >> 2); };
+
+        function initModel(manifest, core, search) {
+            Object.assign(G, {
+                manifest,
+                packages: core.packages,
+                pkgClassOffsets: i32(core.pkgClassOffsets),
+                modules: core.modules,
+                classNames: core.classNames,
+                classModule: i32(core.classModule),
+                classFlags: bytes(core.classFlags),
+                classMethodOffsets: i32(core.classMethodOffsets),
+                methodFlags: bytes(core.methodFlags),
+                revOffsets: i32(core.revOffsets),
+                revSources: i32(core.revSources),
+                revKinds: bytes(core.revKinds),
+                ovrOffsets: i32(core.ovrOffsets),
+                ovrTargets: i32(core.ovrTargets),
+                implOffsets: i32(core.implOffsets),
+                implSources: i32(core.implSources),
+                names: search.names,
+                nameIdx: i32(search.idx)
+            });
+            G.M = G.methodFlags.length;
+            G.C = G.classNames.length;
+            G.sigs = new Array(G.M);
+            G.sigLoaded = new Set();
+            G.namesLower = G.names.map(n => n.toLowerCase());
+            G.classFqnLower = null; // built on first search
+        }
+
+        // largest i with offsets[i] <= value
+        function owner(offsets, value) {
+            let lo = 0, hi = offsets.length - 2;
+            while (lo < hi) {
+                const mid = (lo + hi + 1) >> 1;
+                if (offsets[mid] <= value) lo = mid; else hi = mid - 1;
+            }
+            return lo;
+        }
+        const classOf = m => owner(G.classMethodOffsets, m);
+        const packageOf = c => owner(G.pkgClassOffsets, c);
+        const classFqn = c => { const p = G.packages[packageOf(c)]; return p ? `${p}.${G.classNames[c]}` : G.classNames[c]; };
+        const isEntry = m => (G.methodFlags[m] & 1) !== 0;
+        const isCtor = m => (G.methodFlags[m] & 2) !== 0;
+        const isAbstract = m => (G.methodFlags[m] & 16) !== 0;
+        const BEAN_STATES = ['active', 'inactive', 'conditional'];
+        const beanState = c => BEAN_STATES[(G.classFlags[c] >> 5) & 3] || 'active';
+        let showInactive = false;
+        const classShown = c => showInactive || beanState(c) !== 'inactive';
+        const methodShown = m => classShown(classOf(m));
+
+        /** Methods that override / implement m, transitively (e.g. interface -> abstract class -> class). */
+        function implementationsOf(m) {
+            const found = [], seen = new Set([m]);
+            for (let head = -1, cur = m; ; cur = found[++head]) {
+                if (cur === undefined) break;
+                for (let e = G.implOffsets[cur]; e < G.implOffsets[cur + 1]; e++) {
+                    const impl = G.implSources[e];
+                    if (!seen.has(impl) && methodShown(impl)) { seen.add(impl); found.push(impl); }
+                }
+            }
+            return found;
+        }
+        /** Declarations m directly overrides / implements (one hop up). */
+        function declarationsOf(m) {
+            const found = [];
+            for (let e = G.ovrOffsets[m]; e < G.ovrOffsets[m + 1]; e++) found.push(G.ovrTargets[e]);
+            return found;
+        }
+        const STEREO = ['other', 'controller', 'service', 'repository', 'component'];
+        const stereotypeOf = c => STEREO[G.classFlags[c] & 7] || 'other';
+        const methodName = m => isCtor(m) ? `new ${G.classNames[classOf(m)]}` : G.names[G.nameIdx[m]];
+        const methodLabel = m => `${methodName(m)}(${G.sigs[m] ?? '…'})`;
+        const qualifiedLabel = m => isCtor(m) ? methodLabel(m) : `${G.classNames[classOf(m)]}.${methodLabel(m)}`;
+        const classMethods = c => { const ids = []; for (let m = G.classMethodOffsets[c]; m < G.classMethodOffsets[c + 1]; m++) ids.push(m); return ids; };
+
+        /** Loads parameter-list chunks covering the given methods. */
+        async function ensureSignatures(methodIds) {
+            const chunks = G.manifest.sigChunks;
+            const needed = new Set();
+            for (const m of methodIds) {
+                if (G.sigs[m] !== undefined) continue;
+                let lo = 0, hi = chunks.length - 1;
+                while (lo < hi) { const mid = (lo + hi + 1) >> 1; if (chunks[mid].start <= m) lo = mid; else hi = mid - 1; }
+                if (chunks[lo] && !G.sigLoaded.has(chunks[lo].name)) needed.add(chunks[lo].name);
+            }
+            await Promise.all([...needed].map(async name => {
+                const chunk = await Marga.load(name);
+                if (G.sigLoaded.has(name)) return;
+                const idx = i32(chunk.idx);
+                for (let i = 0; i < idx.length; i++) G.sigs[chunk.start + i] = chunk.params[idx[i]];
+                G.sigLoaded.add(name);
+            }));
+        }
+
+        /** Breadth-first walk over reverse edges: the targets plus everything that reaches them. */
+        function callerSlice(targets, limit) {
+            const seen = new Set(targets);
+            const order = [...targets];
+            let truncated = false;
+            for (let head = 0; head < order.length && !truncated; head++) {
+                const m = order[head];
+                for (let e = G.revOffsets[m]; e < G.revOffsets[m + 1]; e++) {
+                    const caller = G.revSources[e];
+                    if (seen.has(caller) || !methodShown(caller)) continue;
+                    if (seen.size >= limit) { truncated = true; break; }
+                    seen.add(caller);
+                    order.push(caller);
+                }
+            }
+            return { ids: order, set: seen, truncated };
+        }
+
+        // ---------------------------------------------------------------- dom helpers
+        const $ = id => document.getElementById(id);
+        const panel = $('panel'), overlay = $('overlay'), searchBox = $('search');
+        const css = getComputedStyle(document.documentElement);
+        const color = name => css.getPropertyValue(name).trim();
+        const STEREOTYPES = {
+            controller: { label: 'Controller', color: '#2f7de1' },
+            service:    { label: 'Service',    color: '#2e9e5b' },
+            repository: { label: 'Repository', color: '#b8742a' },
+            component:  { label: 'Component / Config', color: '#8a5cd1' },
+            other:      { label: 'Other class', color: '#80808a' }
+        };
+        const stereoColor = ele => (STEREOTYPES[ele.data('stereotype')] || STEREOTYPES.other).color;
+        const el = (tag, cls, text) => {
+            const e = document.createElement(tag);
+            if (cls) e.className = cls;
+            if (text != null) e.textContent = text;
+            return e;
+        };
+        function showOverlay(text) { overlay.textContent = text; overlay.hidden = false; }
+        function hideOverlay() { overlay.hidden = true; }
+
+        function linkList(items, onClick, labelFn) {
+            const ul = el('ul');
+            items.forEach(item => {
+                const li = el('li');
+                const b = el('button', 'link', labelFn(item));
+                b.type = 'button';
+                b.addEventListener('click', () => onClick(item));
+                li.appendChild(b);
+                ul.appendChild(li);
+            });
+            return ul;
+        }
+
+        function legend() {
+            const box = el('div', 'legend');
+            Object.values(STEREOTYPES).forEach(s => {
+                const row = el('div'), sw = el('span', 'swatch');
+                sw.style.borderColor = s.color;
+                sw.style.background = s.color + '22';
+                row.append(sw, el('span', null, s.label));
+                box.appendChild(row);
+            });
+            const rows = [
+                ['dot', color('--muted'), 'Method'],
+                ['diamond', color('--entry'), 'Entry point (endpoint, listener, scheduler)'],
+                ['dash', null, 'Call made inside a lambda / method reference'],
+                ['dots', null, 'May call: the body that runs depends on the runtime type'],
+                ['hier', null, 'Implements / overrides'],
+                ['dashbox', null, 'Conditional bean (@Conditional…, not evaluated)'],
+                ['ghost', null, 'Inactive bean under the active profiles'],
+                ...(G.impact ? [['ring', null, 'Changed in this diff']] : [])
+            ];
+            rows.forEach(([cls, bg, text]) => {
+                const row = el('div'), mark = el('span', cls);
+                if (bg) mark.style.background = bg;
+                row.append(mark, el('span', null, text));
+                box.appendChild(row);
+            });
+            return box;
+        }
+
+        // ---------------------------------------------------------------- cytoscape
+        const cy = cytoscape({
+            container: $('cy'),
+            minZoom: 0.02,
+            maxZoom: 4,
+            textureOnViewport: true,
+            hideEdgesOnViewport: true,
+            style: [
+                { selector: 'node[type="class"]', style: {
+                        'shape': 'round-rectangle', 'background-color': stereoColor, 'background-opacity': 0.1,
+                        'border-width': 1.5, 'border-color': stereoColor,
+                        'label': 'data(label)', 'text-valign': 'top', 'text-halign': 'center',
+                        'font-size': 13, 'font-weight': 600, 'color': color('--text'),
+                        'padding': '14px', 'width': 60, 'height': 30, 'min-zoomed-font-size': 5 }},
+                { selector: 'node[type="method"]', style: {
+                        'shape': 'ellipse', 'width': 10, 'height': 10, 'background-color': color('--muted'),
+                        'label': 'data(label)', 'font-size': 10, 'color': color('--muted'),
+                        'text-halign': 'right', 'text-valign': 'center', 'text-margin-x': 6,
+                        'text-wrap': 'ellipsis', 'text-max-width': '190px', 'min-zoomed-font-size': 7 }},
+                { selector: 'node[type="method"][?entry]', style: {
+                        'shape': 'diamond', 'width': 14, 'height': 14, 'background-color': color('--entry') }},
+                { selector: 'edge', style: {
+                        'width': 0.8, 'curve-style': 'straight', 'opacity': 0.7, 'line-color': color('--edge'),
+                        'target-arrow-shape': 'triangle', 'target-arrow-color': color('--edge'), 'arrow-scale': 0.6 }},
+                { selector: 'edge[kind = 1]', style: { 'line-style': 'dashed' } },
+                { selector: 'edge[kind = 2]', style: { 'line-style': 'dotted', 'width': 1.4 } },
+                { selector: 'edge[?hier]', style: {
+                        'display': 'none', 'line-color': '#9b6dff', 'target-arrow-color': '#9b6dff',
+                        'target-arrow-shape': 'triangle', 'target-arrow-fill': 'hollow', 'arrow-scale': 1, 'width': 1.4 }},
+                { selector: 'node[state="conditional"]', style: { 'border-style': 'dashed' } },
+                { selector: 'node[state="inactive"]', style: { 'border-style': 'dotted', 'opacity': 0.45 } },
+                { selector: '.faded', style: { 'opacity': 0.08 } },
+                { selector: 'node.hl[type="method"]', style: {
+                        'background-color': color('--highlight'), 'color': color('--text'), 'font-size': 10 }},
+                { selector: 'node.hl[type="method"][?entry]', style: { 'background-color': color('--entry') } },
+                { selector: 'edge.hl', style: {
+                        'width': 2, 'opacity': 1, 'line-color': color('--highlight'), 'target-arrow-color': color('--highlight') }},
+                { selector: 'node[?changed]', style: { 'border-width': 3, 'border-color': '#22c55e' } },
+                { selector: 'node.focus[type="method"]', style: {
+                        'width': 16, 'height': 16, 'border-width': 3, 'border-color': color('--text') }},
+                { selector: 'node.focus[type="class"]', style: { 'border-width': 4 } },
+                { selector: 'edge.hl[?hier]', style: {
+                        'display': 'element', 'line-color': '#9b6dff', 'target-arrow-color': '#9b6dff', 'width': 1.6 }}
+            ]
+        });
+
+        /** Cytoscape elements for a set of methods: their classes, the methods, and calls among them. */
+        function buildElements(methodIds) {
+            const inSet = new Set(methodIds);
+            const classes = new Set(methodIds.map(classOf));
+            const elements = [];
+            classes.forEach(c => elements.push({ group: 'nodes', data: {
+                    id: 'c' + c, type: 'class', cls: c, label: G.classNames[c], stereotype: stereotypeOf(c), state: beanState(c) } }));
+            methodIds.forEach(m => elements.push({ group: 'nodes', data: {
+                    id: 'm' + m, type: 'method', mid: m, parent: 'c' + classOf(m), label: methodLabel(m), entry: isEntry(m),
+                    changed: !!(G.impact && G.impact.changedSet.has(m)) } }));
+            methodIds.forEach(m => {
+                for (let e = G.revOffsets[m]; e < G.revOffsets[m + 1]; e++) {
+                    const caller = G.revSources[e];
+                    if (inSet.has(caller)) elements.push({ group: 'edges', data: {
+                            id: 'e' + e, source: 'm' + caller, target: 'm' + m, kind: G.revKinds[e] } });
+                }
+            });
+            // hierarchy edges: implementation -> declaration it implements
+            methodIds.forEach(m => {
+                for (let e = G.ovrOffsets[m]; e < G.ovrOffsets[m + 1]; e++) {
+                    const declaration = G.ovrTargets[e];
+                    if (inSet.has(declaration)) elements.push({ group: 'edges', data: {
+                            id: 'h' + e, source: 'm' + m, target: 'm' + declaration, hier: true } });
+                }
+            });
+            return elements;
+        }
+
+        // ---------- two-level layout: method grid inside class boxes, force layout for the boxes
+        const ROW = 22, COL = 220, MAX_ROWS = 18, PAD = 12, GAP = 40;
+
+        function removeOverlaps(rects, gap, maxIter) {
+            for (let it = 0; it < maxIter; it++) {
+                let moved = false;
+                rects.sort((a, b) => (a.x - a.w / 2) - (b.x - b.w / 2));
+                for (let i = 0; i < rects.length; i++) {
+                    const a = rects[i];
+                    for (let j = i + 1; j < rects.length; j++) {
+                        const b = rects[j];
+                        if (b.x - b.w / 2 > a.x + a.w / 2 + gap) break;
+                        const ox = (a.w + b.w) / 2 + gap - Math.abs(a.x - b.x);
+                        const oy = (a.h + b.h) / 2 + gap - Math.abs(a.y - b.y);
+                        if (ox <= 0 || oy <= 0) continue;
+                        moved = true;
+                        if (ox < oy) { const s = (a.x <= b.x ? -1 : 1) * ox / 2; a.x += s; b.x -= s; }
+                        else         { const s = (a.y <= b.y ? -1 : 1) * oy / 2; a.y += s; b.y -= s; }
+                    }
+                }
+                if (!moved) return;
+            }
+        }
+
+        const methodOrder = (a, b) =>
+            (b.data('entry') - a.data('entry')) || a.data('label').localeCompare(b.data('label'));
+
+        function layoutGraph() {
+            const classes = cy.nodes('[type="class"]');
+            const boxes = new Map();
+            classes.forEach(cls => {
+                const n = cls.children().length;
+                const cols = Math.max(1, Math.ceil(n / MAX_ROWS));
+                const rows = Math.max(1, Math.ceil(n / cols));
+                boxes.set(cls.id(), { rows, w: cols * COL + PAD * 2, h: rows * ROW + PAD * 2 + 20 });
+            });
+            const classEdges = new Set();
+            cy.edges().forEach(e => {
+                const a = e.source().parent().id(), b = e.target().parent().id();
+                if (a && b && a !== b) classEdges.add(a < b ? a + '\n' + b : b + '\n' + a);
+            });
+            const helper = cytoscape({
+                headless: true, styleEnabled: true,
+                elements: [
+                    ...classes.map(c => ({ group: 'nodes', data: { id: c.id(), w: boxes.get(c.id()).w, h: boxes.get(c.id()).h } })),
+                    ...[...classEdges].map((k, i) => {
+                        const [source, target] = k.split('\n');
+                        return { group: 'edges', data: { id: 'c' + i, source, target } };
+                    })
+                ],
+                style: [{ selector: 'node', style: { width: 'data(w)', height: 'data(h)' } }]
+            });
+            return new Promise(resolve => {
+                const layout = helper.layout({
+                    name: 'cose', animate: false, randomize: true,
+                    nodeOverlap: 40, nodeRepulsion: () => 400000, idealEdgeLength: () => 120,
+                    componentSpacing: 120, gravity: 1, numIter: 1500
+                });
+                layout.one('layoutstop', () => {
+                    const rects = helper.nodes().map(n => ({
+                        id: n.id(), x: n.position('x'), y: n.position('y'), w: n.data('w'), h: n.data('h') }));
+                    helper.destroy();
+                    removeOverlaps(rects, GAP, 800);
+                    cy.batch(() => rects.forEach(r => {
+                        const box = boxes.get(r.id);
+                        const cls = cy.getElementById(r.id);
+                        const methods = cls.children().sort(methodOrder);
+                        if (methods.empty()) { cls.position({ x: r.x, y: r.y }); return; }
+                        const left = r.x - r.w / 2 + PAD, top = r.y - r.h / 2 + PAD + 20;
+                        methods.forEach((m, i) => m.position({
+                            x: left + Math.floor(i / box.rows) * COL, y: top + (i % box.rows) * ROW }));
+                    }));
+                    resolve();
+                });
+                layout.run();
+            });
+        }
+
+        async function draw(methodIds) {
+            await ensureSignatures(methodIds);
+            cy.elements().remove();
+            cy.add(buildElements(methodIds));
+            await layoutGraph();
+            cy.fit(undefined, 30);
+        }
+
+        // ---------------------------------------------------------------- views
+        let fullMode = false;
+        const visibleMethods = () => { const ids = []; for (let m = 0; m < G.M; m++) if (methodShown(m)) ids.push(m); return ids; };
+
+        $('show-inactive').addEventListener('change', async evt => {
+            showInactive = evt.target.checked;
+            if (fullMode) {
+                showOverlay('Laying out…');
+                await draw(visibleMethods());
+                hideOverlay();
+            }
+            if (lastSelection) selectMethods(...lastSelection);
+        });
+
+        function showIntro() {
+            const parts = [el('h2', null, 'Explore')];
+            parts.push(el('p', 'muted', fullMode
+                ? 'Click a method to highlight every method that eventually calls it. Click a class to trace all of its methods. Esc resets.'
+                : `This code base has ${G.M.toLocaleString()} methods, too many to draw at once. Search for a class or method to see everything that calls it.`));
+            parts.push(el('h3', null, 'Legend'), legend());
+            panel.replaceChildren(...parts);
+        }
+
+        function badges(c) {
+            const state = beanState(c);
+            const parts = [];
+            if (state === 'inactive') parts.push(el('span', 'badge info', `Inactive under profile ${G.manifest.profiles.join(', ')}`));
+            if (state === 'conditional') parts.push(el('span', 'badge info', 'Conditional bean'));
+            return parts;
+        }
+        const withState = m => {
+            const state = beanState(classOf(m));
+            return qualifiedLabel(m) + (state === 'active' ? '' : ` (${state})`);
+        };
+
+        function showSelection(sel) {
+            const { title, subtitle, isEntryPoint, classId, targets, impls, slice } = sel;
+            const rootSet = new Set([...targets, ...impls]);
+            const entries = slice.ids.filter(isEntry);
+            const upstream = slice.ids.filter(m => !rootSet.has(m));
+            const parts = [el('h2', null, title), el('div', 'muted', subtitle)];
+            if (isEntryPoint) parts.push(el('span', 'badge', 'Entry point'));
+            parts.push(...badges(classId !== undefined ? classId : classOf(targets[0])));
+            if (slice.truncated) parts.push(el('div', 'note', `Large caller tree: showing the nearest ${SLICE_LIMIT.toLocaleString()} methods only.`));
+
+            if (impls.length || targets.some(isAbstract)) {
+                parts.push(el('h3', null, `Implementations (${impls.length})`));
+                parts.push(impls.length
+                    ? linkList(impls, m => selectMethods([m]), withState)
+                    : el('p', 'muted', showInactive ? 'None in the scanned code (e.g. a Spring Data proxy).'
+                        : 'None active. Try "Show inactive beans".'));
+            }
+
+            parts.push(el('h3', null, `Entry points reaching this (${entries.length})`));
+            parts.push(entries.length
+                ? linkList(entries, centerOn, qualifiedLabel)
+                : el('p', 'muted', 'None found. Either unused, or called via reflection, events, or a JDK/library interface (Runnable, Function…) that Marga does not follow.'));
+
+            parts.push(el('h3', null, `Upstream callers (${upstream.length})`));
+            if (upstream.length) parts.push(linkList(upstream.slice(0, 200), m => selectMethods([m]), withState));
+            panel.replaceChildren(...parts);
+        }
+
+        function centerOn(m) {
+            const node = cy.getElementById('m' + m);
+            if (node.nonempty()) cy.animate({ center: { eles: node }, zoom: Math.max(cy.zoom(), 1.2), duration: 300 });
+        }
+
+        function highlight(methodIds, focusIds) {
+            const nodes = cy.collection(methodIds.map(m => cy.getElementById('m' + m)));
+            const edges = nodes.edgesWith(nodes);
+            const visible = nodes.union(edges).union(nodes.parents());
+            cy.batch(() => {
+                cy.elements().removeClass('hl focus').addClass('faded');
+                visible.removeClass('faded');
+                nodes.union(edges).addClass('hl');
+                focusIds.forEach(m => cy.getElementById('m' + m).addClass('focus'));
+            });
+            cy.animate({ fit: { eles: visible, padding: 40 }, duration: 350 });
+        }
+
+        let lastSelection = null;
+
+        /** Full mode: highlight inside the drawn graph. Focus mode: draw just these methods. */
+        async function present(drawnIds, focusIds) {
+            if (!fullMode) {
+                showOverlay('Laying out…');
+                await draw(drawnIds);
+                hideOverlay();
+            }
+            highlight(drawnIds, focusIds);
+        }
+
+        /** Changed methods of the diff and everything that (transitively) calls them. */
+        async function showImpact() {
+            lastSelection = null;
+            const changed = G.impact.changed.map(c => c.m).filter(methodShown);
+            const slice = callerSlice(changed, fullMode ? Infinity : SLICE_LIMIT);
+            if (slice.ids.length) await present(slice.ids, changed);
+            await ensureSignatures(slice.ids.slice(0, 600));
+
+            const entries = slice.ids.filter(isEntry);
+            const parts = [
+                el('h2', null, 'Change impact'),
+                el('div', 'muted', `Compared against ${G.impact.base} · profile ${G.manifest.profiles.join(', ')}`),
+                el('div', 'note', `${changed.length} methods changed · ${slice.ids.length} impacted · ${entries.length} entry points affected`)
+            ];
+            if (slice.truncated) parts.push(el('div', 'note', `Large impact: showing the nearest ${SLICE_LIMIT.toLocaleString()} methods only (impact.md has the full list).`));
+
+            parts.push(el('h3', null, `Affected entry points (${entries.length})`));
+            parts.push(entries.length ? linkList(entries, m => selectMethods([m]), withState)
+                : el('p', 'muted', 'None found.'));
+
+            parts.push(el('h3', null, `Changed methods (${changed.length})`));
+            const byMethod = new Map(G.impact.changed.map(c => [c.m, c]));
+            parts.push(linkList(changed, m => selectMethods([m]), m => {
+                const c = byMethod.get(m);
+                const where = c.lines.length ? `line ${c.lines.join(', ')}` : 'contains a changed anonymous class';
+                return `${withState(m)} — ${where}`;
+            }));
+
+            if (G.impact.unmapped.length) {
+                parts.push(el('h3', null, `Not mapped to a method (${G.impact.unmapped.length})`));
+                G.impact.unmapped.forEach(u => {
+                    parts.push(el('div', 'file', `${u.file}${u.lines.length ? ':' + u.lines.join(', ') : ''}`));
+                    parts.push(el('div', 'file', `↳ ${u.reason}`));
+                });
+            }
+            panel.replaceChildren(...parts);
+        }
+
+        /**
+         * Abstract / interface methods are expanded to their implementations; callers are traced
+         * from the implementations (that is where the call edges point). One hierarchy hop up is
+         * drawn for context.
+         */
+        async function selectMethods(targets, classId) {
+            lastSelection = [targets, classId];
+            const impls = [];
+            const seen = new Set(targets);
+            targets.filter(isAbstract).forEach(t => implementationsOf(t).forEach(m => {
+                if (!seen.has(m)) { seen.add(m); impls.push(m); }
+            }));
+            const roots = [...targets, ...impls];
+            const slice = callerSlice(roots, fullMode ? Infinity : SLICE_LIMIT);
+            const drawn = new Set(slice.ids);
+            roots.forEach(m => declarationsOf(m).forEach(d => { if (methodShown(d)) drawn.add(d); }));
+            const drawnIds = [...drawn];
+
+            await present(drawnIds, targets);
+            await ensureSignatures([...drawnIds.slice(0, 400), ...impls]);
+            if (classId !== undefined) cy.getElementById('c' + classId).addClass('focus');
+            const m = targets[0];
+            showSelection({
+                title: classId !== undefined ? G.classNames[classId] : methodLabel(m),
+                subtitle: classFqn(classId !== undefined ? classId : classOf(m)),
+                isEntryPoint: classId === undefined && isEntry(m),
+                classId, targets, impls, slice
+            });
+        }
+
+        const selectClass = c => selectMethods(classMethods(c), c);
+
+        function reset() {
+            searchBox.value = '';
+            lastSelection = null;
+            if (fullMode) {
+                cy.elements().removeClass('faded hl focus');
+                cy.animate({ fit: { padding: 30 }, duration: 300 });
+            } else {
+                cy.elements().remove();
+                showOverlay('Search for a class or method to see its callers.');
+            }
+            showIntro();
+        }
+
+        // ---------------------------------------------------------------- search
+        async function runSearch(raw) {
+            const q = raw.trim().toLowerCase();
+            if (!q) return reset();
+            if (!G.classFqnLower) G.classFqnLower = G.classNames.map((_, c) => classFqn(c).toLowerCase());
+
+            const dot = q.lastIndexOf('.');
+            const classQuery = dot > 0 ? q.slice(0, dot) : null;
+            const methodQuery = dot > 0 ? q.slice(dot + 1) : q;
+
+            const classes = [];
+            if (!classQuery) {
+                for (let c = 0; c < G.C && classes.length < 50; c++) if (G.classFqnLower[c].includes(q)) classes.push(c);
+            }
+            // Class.method: an exact class name match wins over substring matches
+            const exactClass = c => G.classNames[c].toLowerCase() === classQuery || G.classFqnLower[c] === classQuery;
+            const hasExactClass = classQuery && G.classNames.some((_, c) => exactClass(c));
+            const classMatches = c => !classQuery || (hasExactClass ? exactClass(c) : G.classFqnLower[c].includes(classQuery));
+
+            const methods = [];
+            for (let c = 0; c < G.C && methods.length < 200; c++) {
+                if (!classMatches(c)) continue;
+                for (let m = G.classMethodOffsets[c]; m < G.classMethodOffsets[c + 1] && methods.length < 200; m++) {
+                    if (!methodQuery || G.namesLower[G.nameIdx[m]].includes(methodQuery)) methods.push(m);
+                }
+            }
+            // an exact method name match wins too (save vs saveAll)
+            const exactMethods = methods.filter(m => G.namesLower[G.nameIdx[m]] === methodQuery);
+            if (classQuery && exactMethods.length) methods.splice(0, methods.length, ...exactMethods);
+
+            if (methods.length === 1 && classes.length === 0) return selectMethods(methods);
+            await ensureSignatures(methods);
+            const parts = [el('h2', null, `Results for "${raw.trim()}"`)];
+            if (!classes.length && !methods.length) parts.push(el('p', 'muted', 'No matches.'));
+            if (classes.length) {
+                parts.push(el('h3', null, `Classes (${classes.length}${classes.length === 50 ? '+' : ''})`));
+                parts.push(linkList(classes, selectClass, c => classFqn(c)));
+            }
+            if (methods.length) {
+                parts.push(el('h3', null, `Methods (${methods.length}${methods.length === 200 ? '+' : ''})`));
+                parts.push(linkList(methods, m => selectMethods([m]), withState));
+            }
+            panel.replaceChildren(...parts);
+        }
+
+        // ---------------------------------------------------------------- wiring
+        cy.on('tap', evt => {
+            const t = evt.target;
+            if (t === cy) { if (fullMode) reset(); return; }
+            if (!t.isNode()) return;
+            if (t.data('type') === 'method') selectMethods([t.data('mid')]);
+            else selectClass(t.data('cls'));
+        });
+        searchBox.addEventListener('keydown', evt => {
+            if (evt.key === 'Enter') runSearch(searchBox.value);
+            if (evt.key === 'Escape') reset();
+        });
+        document.addEventListener('keydown', evt => {
+            if (evt.key === 'Escape' && document.activeElement !== searchBox) reset();
+        });
+        $('reset').addEventListener('click', reset);
+        $('impact-btn').addEventListener('click', () => showImpact());
+
+        async function start() {
+            try {
+                const manifest = await Marga.load('manifest');
+                if (manifest.formatVersion !== FORMAT_VERSION) {
+                    throw new Error(`Report data format ${manifest.formatVersion} does not match viewer format ${FORMAT_VERSION}. Re-run the plugin.`);
+                }
+                const s = manifest.stats;
+                document.title = `Marga — profile: ${manifest.profiles.join(', ')}`;
+                $('stats').textContent =
+                    `${s.classes.toLocaleString()} classes · ${s.methods.toLocaleString()} methods · ${s.edges.toLocaleString()} calls · profile: ${manifest.profiles.join(', ')}`;
+                showOverlay('Loading call graph…');
+                const [core, search] = await Promise.all([Marga.load('core'), Marga.load('search')]);
+                initModel(manifest, core, search);
+                if (manifest.impact) {
+                    G.impact = await Marga.load('impact');
+                    G.impact.changedSet = new Set(G.impact.changed.map(c => c.m));
+                    $('impact-btn').hidden = false;
+                }
+                searchBox.disabled = false;
+
+                fullMode = G.M <= FULL_RENDER_LIMIT;
+                showIntro();
+                if (fullMode) {
+                    showOverlay(`Laying out ${G.M.toLocaleString()} methods…`);
+                    const all = visibleMethods();
+                    await new Promise(r => setTimeout(r, 30)); // let the message paint
+                    await draw(all);
+                    hideOverlay();
+                } else {
+                    showOverlay('Search for a class or method to see its callers.');
+                }
+                if (G.impact) await showImpact(); // a diff was analyzed: open on its impact
+            } catch (err) {
+                showOverlay(`Could not load the report: ${err.message}. Keep index.html next to its data/ folder.`);
+                console.error(err);
+            }
+        }
+        start();
+    })();
+</script>
+</body>
+</html>
