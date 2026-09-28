@@ -220,6 +220,25 @@ attach `impact.json` / `impact.md` as build artifacts.
 
 All `-Dmarga.*` properties are listed in [Configuration](#configuration).
 
+## Results
+
+Marga's interactive report visualizes the call graph across three primary states:
+
+### 1. Impact view
+Shows the impact of changes based on the provided `marga.diffBase` or `marga.diffFile` configuration. This is also the default state of the report when a diff is available. It highlights changed methods, traces all callers transitively, and flags affected entry points.
+
+![Impact View](docs/images/impact-view.jpg)
+
+### 2. Overview
+Shows the full overview when nothing is selected — displaying the class and method constellation along with metadata and very slightly visible connecting lines between related components.
+
+![Overview](docs/images/overview.jpg)
+
+### 3. Selection view
+Shows how a specific method is reached from different entry points or methods, tracing incoming callers and outgoing invocations with clear visual paths and details in the side panel.
+
+![Selection View](docs/images/selection-view.jpg)
+
 ## Change impact analysis
 
 Impact analysis is driven by `marga.diffBase` or `marga.diffFile` — see
