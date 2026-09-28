@@ -8,7 +8,7 @@
        If you publish before it verifies, use com.scriptchess.marga instead (that namespace is verified). -->
   <groupId>com.scriptchess</groupId>
   <artifactId>marga-maven-plugin</artifactId>
-  <version>1.0.0</version>
+  <version>1.0.2</version>
   <packaging>maven-plugin</packaging>
 
   <name>Marga Maven Plugin</name>
@@ -49,7 +49,7 @@
 
   <properties>
     <!-- CHANGE THIS: your GitHub user or organization (used in url, scm, issueManagement) -->
-    <github.owner>YOUR_GITHUB</github.owner>
+    <github.owner>kgcorner</github.owner>
 
     <maven.compiler.release>17</maven.compiler.release>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

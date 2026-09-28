@@ -72,6 +72,8 @@
         .pill.cyan { color: #22d3ee; border-color: rgba(6, 182, 212, .35); background: rgba(6, 182, 212, .08); }
         .pill.amber { color: #fbbf24; border-color: rgba(245, 158, 11, .4); background: rgba(245, 158, 11, .1); cursor: pointer; }
         .pill.amber:hover { background: rgba(245, 158, 11, .2); }
+        .pill.amber svg { width: 14px; height: 14px; margin-left: 2px; }
+        .pill.amber:focus-visible { outline: 2px solid #fbbf24; outline-offset: 2px; }
         .runmeta { color: var(--muted); font-size: 12.5px; white-space: nowrap; padding-left: 12px; border-left: 1px solid var(--line); margin-left: auto; }
 
         /* ---------- search */
@@ -104,6 +106,9 @@
         .head-meta { font: 12px var(--mono); color: var(--muted); }
         .close { margin-left: auto; width: 30px; height: 30px; border-radius: 8px; border: 0; background: transparent; color: var(--muted); font-size: 20px; line-height: 1; }
         .close:hover { background: rgba(255, 255, 255, .06); color: var(--text); }
+        .back { display: flex; align-items: center; gap: 8px; width: 100%; margin-bottom: 14px; padding: 9px 12px; border-radius: 10px;
+            border: 1px solid rgba(245, 158, 11, .35); background: rgba(245, 158, 11, .07); color: #fbbf24; font: 12px var(--mono); text-align: left; }
+        .back:hover { background: rgba(245, 158, 11, .14); }
         section.block { margin-bottom: 24px; }
         section.block > .eyebrow { display: flex; justify-content: space-between; margin-bottom: 12px; }
         .eyebrow .accent { color: var(--cyan); }
@@ -781,6 +786,29 @@
         // ================================================================ views
         let fullMode = false;
         let lastSelection = null;
+
+        // ---------- deep links: #impact, #method=<id>, #class=<id>
+        // Every view is reflected in the URL, so it can be shared and the browser's Back button works.
+        let routing = false;
+        function setRoute(route, replace) {
+            if (routing) return;
+            const url = route ? '#' + route : location.pathname + location.search;
+            if ((route ? '#' + route : '') === location.hash) return;
+            history[replace ? 'replaceState' : 'pushState'](null, '', url);
+        }
+        async function applyRoute() {
+            const hash = decodeURIComponent(location.hash.slice(1));
+            routing = true;
+            try {
+                if (hash === 'impact' && G.impact) await showImpact();
+                else if (hash.startsWith('method=') && +hash.slice(7) >= 0 && +hash.slice(7) < G.M) await selectMethods([+hash.slice(7)]);
+                else if (hash.startsWith('class=') && +hash.slice(6) >= 0 && +hash.slice(6) < G.C) await selectClass(+hash.slice(6));
+                else reset();
+            } finally {
+                routing = false;
+            }
+        }
+        window.addEventListener('popstate', () => applyRoute());
         let copyText = '';
 
         async function present(drawnIds, focusIds, fitIds) {
@@ -800,6 +828,14 @@
             drawer.classList.add('open');
         }
         function closeDrawer() { drawer.classList.remove('open'); }
+
+        /** "Back to change impact" shortcut shown above every non-impact view when a diff was analyzed. */
+        function impactBack() {
+            const b = el('button', 'back', `← Back to change impact · ${fmt(G.impact.changed.length)} changed methods`);
+            b.type = 'button';
+            b.addEventListener('click', () => showImpact());
+            return b;
+        }
 
         function drawerHead(chipText, chipColor, meta) {
             const head = el('div', 'drawer-head');
@@ -932,6 +968,7 @@
         async function selectMethods(targets, classId) {
             closeResults();
             lastSelection = [targets, classId];
+            setRoute(classId !== undefined ? `class=${classId}` : `method=${targets[0]}`);
             const impls = [];
             const seen = new Set(targets);
             targets.filter(isAbstract).forEach(t => implementationsOf(t).forEach(m => {
@@ -954,7 +991,8 @@
             const m = targets[0];
             const s = stereo(c);
 
-            const nodes = [drawerHead(`${stereotypeOf(c) === 'other' ? 'Class' : s.label} focus`, s.color, `${fmt(upstream.length)} callers · ${paths.length} entry points`)];
+            const nodes = G.impact ? [impactBack()] : [];
+            nodes.push(drawerHead(`${stereotypeOf(c) === 'other' ? 'Class' : s.label} focus`, s.color, `${fmt(upstream.length)} callers · ${paths.length} entry points`));
             if (slice.truncated) nodes.push(el('div', 'note', `Large caller tree: showing the nearest ${fmt(SLICE_LIMIT)} methods.`));
 
             const target = el('div', 'target');
@@ -1012,9 +1050,10 @@
         const selectClass = c => selectMethods(classMethods(c), c);
 
         /** Changed methods of the diff and everything that (transitively) calls them. */
-        async function showImpact() {
+        async function showImpact(replaceRoute = false) {
             closeResults();
             lastSelection = null;
+            setRoute('impact', replaceRoute);
             const changed = G.impact.changed.map(c => c.m).filter(methodShown);
             const slice = callerSlice(changed, fullMode ? Infinity : SLICE_LIMIT);
             if (slice.ids.length) await present(slice.ids, changed);
@@ -1069,6 +1108,7 @@
         function reset() {
             closeResults();
             lastSelection = null;
+            setRoute('');
             closeDrawer();
             if (fullMode) {
                 cy.elements().removeClass('faded hl focus dim-trace');
@@ -1206,8 +1246,14 @@
             pill('cyan', `${fmt(G.entryCount)} Entry points`);
             if (G.impact) {
                 const p = pill('amber', `${fmt(G.impact.changed.length)} Changed`);
-                p.title = 'Show change impact';
-                p.addEventListener('click', showImpact);
+                p.insertAdjacentHTML('beforeend',
+                    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+                    '<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>');
+                p.title = 'View change impact';
+                p.setAttribute('role', 'button');
+                p.tabIndex = 0;
+                p.addEventListener('click', () => showImpact());
+                p.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); showImpact(); } });
             }
             const when = new Date(G.manifest.generatedAt);
             $('runmeta').textContent = `profile ${G.manifest.profiles.join(', ')} · ${isNaN(when) ? '' : when.toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}`;
@@ -1249,7 +1295,8 @@
                 } else {
                     idleHint();
                 }
-                if (G.impact) await showImpact(); // a diff was analyzed: open on its impact
+                if (location.hash) await applyRoute();              // deep link: #impact, #method=…, #class=…
+                else if (G.impact) await showImpact(true);         // a diff was analyzed: open on its impact
             } catch (err) {
                 showHint('Could not load the report', `${err.message}.<br>Keep index.html next to its data/ folder.`);
                 console.error(err);
