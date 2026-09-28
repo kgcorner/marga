@@ -13,7 +13,7 @@
 
   <name>Marga Maven Plugin</name>
   <description>Scans compiled Spring Boot code and generates an interactive method call graph with change-impact analysis (marga = path).</description>
-  <url>https://github.com/${github.owner}/marga</url>
+  <url>https://github.com/kgcorner/marga</url>
   <inceptionYear>2026</inceptionYear>
 
   <!-- ===== Metadata required by Maven Central ===== -->
@@ -33,14 +33,14 @@
     </developer>
   </developers>
   <scm>
-    <url>https://github.com/${github.owner}/marga</url>
-    <connection>scm:git:https://github.com/${github.owner}/marga.git</connection>
-    <developerConnection>scm:git:ssh://git@github.com/${github.owner}/marga.git</developerConnection>
+    <url>https://github.com/kgcorner/marga</url>
+    <connection>scm:git:https://github.com/kgcorner/marga.git</connection>
+    <developerConnection>scm:git:ssh://git@github.com/kgcorner/marga.git</developerConnection>
     <tag>v${project.version}</tag>
   </scm>
   <issueManagement>
     <system>GitHub</system>
-    <url>https://github.com/${github.owner}/marga/issues</url>
+    <url>https://github.com/kgcorner/marga/issues</url>
   </issueManagement>
 
   <prerequisites>
