@@ -63,6 +63,9 @@ public record CallGraph(
     public static final int M_STATIC = 1 << 2;
     public static final int M_ACCESSOR = 1 << 3;
     public static final int M_ABSTRACT = 1 << 4;
+    /** bits 5-7: entry-point kind, see {@link #ENTRY_KINDS} (0 = not an entry point) */
+    public static final int M_ENTRY_KIND_SHIFT = 5;
+    public static final String[] ENTRY_KINDS = {"", "http", "scheduled", "event", "kafka", "rabbit", "jms", "sqs"};
 
     // edge kinds (an edge keeps the weakest kind on its way)
     public static final byte EDGE_DIRECT = 0;   // solid: this body certainly runs

@@ -3,82 +3,257 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Marga — Call Graph</title>
+    <title>Marga — Code Knowledge Graph</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjUxMiIgaGVpZ2h0PSI1MTIiIHJvbGU9ImltZyIgYXJpYS1sYWJlbD0iTWFyZ2EiPgogIDx0aXRsZT5NYXJnYTwvdGl0bGU+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9Im1nLXBhdGgiIHgxPSIxNSIgeTE9IjMzIiB4Mj0iNDkiIHkyPSIzMyIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiMwNmI2ZDQiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMxMGI5ODEiLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9Im1nLXRpbGUiIHgxPSIwIiB5MT0iMCIgeDI9IjY0IiB5Mj0iNjQiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMGIxYTJlIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMDMwYTE0Ii8+CiAgICA8L2xpbmVhckdyYWRpZW50PgogICAgPGxpbmVhckdyYWRpZW50IGlkPSJtZy1lZGdlIiB4MT0iMCIgeTE9IjAiIHgyPSI2NCIgeTI9IjY0IiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+CiAgICAgIDxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iIzA2YjZkNCIgc3RvcC1vcGFjaXR5PSIuNTUiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMxMGI5ODEiIHN0b3Atb3BhY2l0eT0iLjE1Ii8+CiAgICA8L2xpbmVhckdyYWRpZW50PgogICAgPGZpbHRlciBpZD0ibWctZ2xvdyIgeD0iLTMwJSIgeT0iLTMwJSIgd2lkdGg9IjE2MCUiIGhlaWdodD0iMTYwJSI+PGZlR2F1c3NpYW5CbHVyIHN0ZERldmlhdGlvbj0iMi4yIi8+PC9maWx0ZXI+CiAgPC9kZWZzPgogIDxyZWN0IHg9IjEiIHk9IjEiIHdpZHRoPSI2MiIgaGVpZ2h0PSI2MiIgcng9IjE1IiBmaWxsPSJ1cmwoI21nLXRpbGUpIiBzdHJva2U9InVybCgjbWctZWRnZSkiIHN0cm9rZS13aWR0aD0iMS41Ii8+CiAgPHBhdGggZD0iTTE1IDQ3VjE5bDE3IDE3IDE3LTE3djI4IiBmaWxsPSJub25lIiBzdHJva2U9InVybCgjbWctcGF0aCkiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBvcGFjaXR5PSIuNTUiIGZpbHRlcj0idXJsKCNtZy1nbG93KSIvPgogIDxwYXRoIGQ9Ik0xNSA0N1YxOWwxNyAxNyAxNy0xN3YyOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ1cmwoI21nLXBhdGgpIiBzdHJva2Utd2lkdGg9IjQuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CiAgPGNpcmNsZSBjeD0iMTUiIGN5PSIxOSIgcj0iNCIgZmlsbD0iIzAzMGExNCIgc3Ryb2tlPSIjMDZiNmQ0IiBzdHJva2Utd2lkdGg9IjIuNCIvPgogIDxjaXJjbGUgY3g9IjMyIiBjeT0iMzYiIHI9IjQiIGZpbGw9IiMwMzBhMTQiIHN0cm9rZT0iIzBiYjhiMCIgc3Ryb2tlLXdpZHRoPSIyLjQiLz4KICA8Y2lyY2xlIGN4PSI0OSIgY3k9IjE5IiByPSI0IiBmaWxsPSIjMDMwYTE0IiBzdHJva2U9IiMwZGI4OWEiIHN0cm9rZS13aWR0aD0iMi40Ii8+CiAgPHJlY3QgeD0iMTEiIHk9IjQzIiB3aWR0aD0iOCIgaGVpZ2h0PSI4IiByeD0iMS4yIiB0cmFuc2Zvcm09InJvdGF0ZSg0NSAxNSA0NykiIGZpbGw9IiNmNDNmNWUiLz4KICA8Y2lyY2xlIGN4PSI0OSIgY3k9IjQ3IiByPSI5IiBmaWxsPSIjMTBiOTgxIiBvcGFjaXR5PSIuMjIiLz4KICA8Y2lyY2xlIGN4PSI0OSIgY3k9IjQ3IiByPSI1IiBmaWxsPSIjMTBiOTgxIiBzdHJva2U9IiNkMWZhZTUiIHN0cm9rZS13aWR0aD0iMS42Ii8+Cjwvc3ZnPgo=">
     <style>
         :root {
-            --bg: #f6f6f4; --panel: #ffffff; --text: #1d1d1f; --muted: #6b6b72;
-            --border: #e1e1de; --edge: #c9c9c6; --highlight: #e8940c; --entry: #d6283f;
-        }
-        @media (prefers-color-scheme: dark) {
-            :root {
-                --bg: #15161a; --panel: #1e1f24; --text: #e7e7ea; --muted: #9a9aa3;
-                --border: #2d2e35; --edge: #3a3b44; --highlight: #f5a524; --entry: #ff5468;
-            }
+            --obsidian: #030a14;
+            --glass: rgba(8, 18, 34, 0.84);
+            --line: rgba(148, 163, 184, 0.14);
+            --line-strong: rgba(148, 163, 184, 0.24);
+            --text: #e2e8f0;
+            --muted: #7c8aa0;
+            --dim: #53627a;
+            --cyan: #06b6d4;
+            --emerald: #10b981;
+            --purple: #a855f7;
+            --violet: #8b5cf6;
+            --rose: #f43f5e;
+            --amber: #f59e0b;
+            --blue: #3b82f6;
+            --mono: "JetBrains Mono", "Fira Code", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            --sans: Inter, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
         }
         * { box-sizing: border-box; }
-        html, body { margin: 0; height: 100%; }
-        body {
-            display: grid; grid-template-rows: auto 1fr; grid-template-columns: 1fr 340px;
-            height: 100vh; background: var(--bg); color: var(--text);
-            font: 13px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        html, body { margin: 0; height: 100%; overflow: hidden; background: var(--obsidian); color: var(--text); font: 13px/1.45 var(--sans); }
+        button { font: inherit; color: inherit; cursor: pointer; }
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(56, 189, 248, 0.22); border-radius: 9999px; }
+
+        /* ---------- canvas & ambience */
+        #stage { position: fixed; inset: 0; }
+        #stage::before, #stage::after { content: ""; position: absolute; inset: 0; pointer-events: none; }
+        #stage::before { background: radial-gradient(circle at 50% 50%, rgba(9, 28, 56, 0.65) 0%, rgba(2, 8, 18, 0.96) 75%); }
+        #stage::after {
+            background-image:
+                    radial-gradient(rgba(255, 255, 255, 0.16) 1px, transparent 0),
+                    linear-gradient(to right, rgba(56, 189, 248, 0.035) 1px, transparent 1px),
+                    linear-gradient(to bottom, rgba(56, 189, 248, 0.035) 1px, transparent 1px);
+            background-size: 70px 70px, 32px 32px, 32px 32px;
+            opacity: .55;
         }
-        header {
-            grid-column: 1 / -1; display: flex; align-items: center; gap: 14px;
-            padding: 10px 16px; background: var(--panel); border-bottom: 1px solid var(--border);
+        #cy { position: absolute; inset: 0; z-index: 1; }
+
+        .glass {
+            background: var(--glass);
+            backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+            border-radius: 16px;
+            box-shadow: 0 20px 45px -10px rgba(0, 0, 0, .75), 0 0 0 1px rgba(255, 255, 255, .08), inset 0 1px 0 0 rgba(255, 255, 255, .1);
         }
-        header h1 { margin: 0; font-size: 16px; letter-spacing: .3px; }
-        header .stats { color: var(--muted); }
-        header .spacer { flex: 1; }
-        header input[type=search] {
-            width: 320px; padding: 6px 10px; border-radius: 6px; font: inherit;
-            border: 1px solid var(--border); background: var(--bg); color: var(--text);
+        .mono { font-family: var(--mono); }
+        .eyebrow { font: 600 10.5px/1 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+
+        /* ---------- top bar */
+        #topbar {
+            position: fixed; z-index: 5; top: 20px; left: 20px; right: 560px;
+            display: flex; align-items: center; gap: 10px; padding: 10px 16px; min-height: 58px; overflow: hidden;
         }
-        header button, aside button.link { font: inherit; color: var(--text); background: transparent; cursor: pointer; }
-        header button { padding: 6px 12px; border: 1px solid var(--border); border-radius: 6px; }
-        #cy { position: relative; min-height: 0; min-width: 0; }
-        #overlay {
-            position: absolute; inset: 0; display: grid; place-items: center; padding: 24px; text-align: center;
-            background: var(--bg); color: var(--muted); font-size: 14px; z-index: 5;
+        .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 17px; letter-spacing: .2px; padding-right: 14px; border-right: 1px solid var(--line); flex-shrink: 0; }
+        .logo { width: 36px; height: 36px; display: grid; place-items: center; filter: drop-shadow(0 0 10px rgba(6, 182, 212, .35)); }
+        .logo svg { display: block; }
+        .pills { display: flex; gap: 8px; flex-wrap: nowrap; overflow: hidden; }
+        .pill { display: inline-flex; align-items: center; gap: 7px; padding: 6px 10px; border-radius: 8px; white-space: nowrap;
+            font: 12px/1 var(--mono); border: 1px solid; flex-shrink: 0; }
+        .pill::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; box-shadow: 0 0 8px currentColor; }
+        .pill.blue { color: #60a5fa; border-color: rgba(59, 130, 246, .35); background: rgba(59, 130, 246, .08); }
+        .pill.emerald { color: #34d399; border-color: rgba(16, 185, 129, .35); background: rgba(16, 185, 129, .08); }
+        .pill.purple { color: #c084fc; border-color: rgba(168, 85, 247, .35); background: rgba(168, 85, 247, .08); }
+        .pill.cyan { color: #22d3ee; border-color: rgba(6, 182, 212, .35); background: rgba(6, 182, 212, .08); }
+        .pill.amber { color: #fbbf24; border-color: rgba(245, 158, 11, .4); background: rgba(245, 158, 11, .1); cursor: pointer; }
+        .pill.amber:hover { background: rgba(245, 158, 11, .2); }
+        .runmeta { color: var(--muted); font-size: 12.5px; white-space: nowrap; padding-left: 12px; border-left: 1px solid var(--line); margin-left: auto; }
+
+        /* ---------- search */
+        #searchbox { position: fixed; z-index: 7; top: 20px; right: 20px; width: 520px; }
+        #searchbox .field { display: flex; align-items: center; gap: 10px; padding: 0 12px 0 16px; height: 58px; border-radius: 16px;
+            background: #f8fafc; box-shadow: 0 0 0 1px rgba(255,255,255,.4), 0 18px 40px -12px rgba(0,0,0,.8); }
+        #search { flex: 1; border: 0; outline: 0; background: transparent; font: 14px var(--mono); color: #0f172a; }
+        #search::placeholder { color: #94a3b8; }
+        .kbd { font: 11px var(--mono); color: #e2e8f0; background: #475569; border-radius: 7px; padding: 5px 8px; }
+        #results { margin-top: 8px; max-height: 60vh; overflow: auto; padding: 6px; display: none; }
+        #results.open { display: block; }
+        .result { display: flex; align-items: baseline; gap: 10px; width: 100%; text-align: left; border: 0; background: transparent;
+            padding: 8px 10px; border-radius: 9px; }
+        .result.active, .result:hover { background: rgba(56, 189, 248, .1); }
+        .result .name { font: 13px var(--mono); color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .result .where { font: 11px var(--mono); color: var(--dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-left: auto; max-width: 45%; }
+        .result .tag { font: 10px var(--mono); padding: 2px 6px; border-radius: 5px; border: 1px solid var(--line-strong); color: var(--muted); flex-shrink: 0; }
+        .results-head { padding: 8px 10px 4px; }
+
+        /* ---------- inspector drawer */
+        #drawer { position: fixed; z-index: 4; top: 98px; right: 20px; bottom: 20px; width: 520px;
+            display: flex; flex-direction: column; transform: translateX(560px); transition: transform .45s cubic-bezier(.16, 1, .3, 1); }
+        #drawer.open { transform: none; }
+        #drawer .scroll { flex: 1; overflow: auto; padding: 22px 24px 8px; }
+        #drawer .foot { padding: 14px 24px 22px; border-top: 1px solid var(--line); }
+        .drawer-head { display: flex; align-items: center; gap: 12px; padding-bottom: 16px; border-bottom: 1px solid var(--line); margin-bottom: 20px; }
+        .chip { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 999px; font: 600 11px/1 var(--mono);
+            letter-spacing: .08em; text-transform: uppercase; border: 1px solid; }
+        .chip::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; box-shadow: 0 0 8px currentColor; }
+        .head-meta { font: 12px var(--mono); color: var(--muted); }
+        .close { margin-left: auto; width: 30px; height: 30px; border-radius: 8px; border: 0; background: transparent; color: var(--muted); font-size: 20px; line-height: 1; }
+        .close:hover { background: rgba(255, 255, 255, .06); color: var(--text); }
+        section.block { margin-bottom: 24px; }
+        section.block > .eyebrow { display: flex; justify-content: space-between; margin-bottom: 12px; }
+        .eyebrow .accent { color: var(--cyan); }
+        .target { border: 1px solid rgba(16, 185, 129, .35); border-radius: 12px; padding: 16px; background: rgba(3, 10, 20, .6);
+            box-shadow: inset 0 0 24px rgba(16, 185, 129, .06); }
+        .target .sig { font: 700 16px/1.35 var(--mono); color: #f8fafc; overflow-wrap: anywhere; }
+        .target .fqn { font: 12.5px var(--mono); color: var(--amber); margin-top: 6px; overflow-wrap: anywhere; }
+        .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .stat { border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; background: rgba(3, 10, 20, .45); }
+        .stat .eyebrow { font-size: 10px; }
+        .stat .value { font: 600 14px var(--mono); margin-top: 8px; overflow-wrap: anywhere; }
+        .trace { border: 1px solid var(--line-strong); border-radius: 12px; padding: 14px; margin-bottom: 10px; background: rgba(3, 10, 20, .45); cursor: pointer;
+            transition: border-color .2s, box-shadow .2s; }
+        .trace:hover, .trace.active { border-color: rgba(6, 182, 212, .55); box-shadow: 0 0 0 1px rgba(6, 182, 212, .2), 0 0 24px -8px rgba(6, 182, 212, .5); }
+        .trace-head { display: flex; align-items: center; gap: 8px; font: 600 12px var(--mono); padding-bottom: 10px; margin-bottom: 8px; border-bottom: 1px solid var(--line); }
+        .trace-head::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; box-shadow: 0 0 8px currentColor; }
+        .trace-head .right { margin-left: auto; font-weight: 400; color: var(--muted); }
+        .hop { font: 12.5px/1.9 var(--mono); color: #b6c2d4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .hop.entry { color: var(--text); }
+        .hop.mid { color: var(--emerald); }
+        .hop .arrow { color: var(--dim); }
+        .hop .kind { font-size: 10.5px; color: var(--dim); margin-left: 6px; }
+        .hop.final { margin-top: 6px; padding: 6px 10px; border-radius: 7px; color: #6ee7b7; font-weight: 600;
+            background: rgba(16, 185, 129, .1); border: 1px solid rgba(16, 185, 129, .35); }
+        .list { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+        .row { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-bottom: 1px solid var(--line); width: 100%;
+            text-align: left; background: transparent; border-left: 0; border-right: 0; border-top: 0; font: 13px var(--mono); }
+        .row:last-child { border-bottom: 0; }
+        button.row:hover { background: rgba(56, 189, 248, .06); }
+        .row .dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+        .row .label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .row .sub { font-size: 11px; color: var(--dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .row .tag { margin-left: auto; font: 10.5px var(--mono); padding: 4px 8px; border-radius: 6px; border: 1px solid; flex-shrink: 0; }
+        .tag.ok { color: #34d399; border-color: rgba(16, 185, 129, .45); background: rgba(16, 185, 129, .08); }
+        .tag.off { color: #94a3b8; border-color: var(--line-strong); background: rgba(148, 163, 184, .08); }
+        .tag.cond { color: #fbbf24; border-color: rgba(245, 158, 11, .45); background: rgba(245, 158, 11, .08); }
+        .note { font: 12px var(--mono); color: #fbbf24; border: 1px solid rgba(245, 158, 11, .35); background: rgba(245, 158, 11, .07);
+            padding: 10px 12px; border-radius: 10px; margin-bottom: 16px; }
+        .empty { font: 12.5px var(--mono); color: var(--muted); padding: 12px 14px; border: 1px dashed var(--line-strong); border-radius: 12px; }
+        details { border: 1px solid var(--line); border-radius: 12px; padding: 10px 14px; }
+        details summary { cursor: pointer; font: 12px var(--mono); color: var(--muted); }
+        details .hop { cursor: pointer; }
+        details .hop:hover { color: var(--cyan); }
+        .legend-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 20px; font: 11.5px var(--mono); color: var(--muted); }
+        .legend-grid span { display: flex; align-items: center; gap: 8px; }
+        .stroke { width: 16px; height: 0; border-top: 3px solid; border-radius: 2px; }
+        .cta { width: 100%; height: 46px; border: 0; border-radius: 12px; font: 600 14px var(--mono); color: #03131a;
+            background: linear-gradient(90deg, var(--cyan), var(--emerald)); box-shadow: 0 10px 30px -10px rgba(6, 182, 212, .7); }
+        .cta:hover { filter: brightness(1.08); }
+        .cta.done { background: linear-gradient(90deg, var(--emerald), var(--emerald)); }
+
+        /* ---------- lod widget */
+        #lod { position: fixed; z-index: 4; left: 20px; bottom: 20px; width: 400px; padding: 18px 18px 16px; }
+        .seg { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; border-radius: 12px; background: rgba(3, 10, 20, .7); border: 1px solid var(--line); margin: 12px 0 16px; }
+        .seg button { border: 1px solid transparent; background: transparent; border-radius: 9px; padding: 10px 8px; font: 12.5px var(--mono); color: var(--muted); }
+        .seg button.on { color: #67e8f9; background: rgba(6, 182, 212, .12); border-color: rgba(6, 182, 212, .5); box-shadow: 0 0 18px -6px rgba(6, 182, 212, .6); }
+        .toggle { display: flex; align-items: center; gap: 10px; font: 12px var(--mono); color: var(--muted); cursor: pointer; user-select: none; }
+        .toggle input { display: none; }
+        .switch { width: 32px; height: 18px; border-radius: 999px; background: rgba(148, 163, 184, .25); position: relative; transition: background .2s; }
+        .switch::after { content: ""; position: absolute; top: 2px; left: 2px; width: 14px; height: 14px; border-radius: 50%; background: #cbd5e1; transition: transform .2s; }
+        .toggle input:checked + .switch { background: rgba(6, 182, 212, .6); }
+        .toggle input:checked + .switch::after { transform: translateX(14px); }
+        .legend { display: flex; flex-wrap: wrap; gap: 8px 16px; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--line); font: 11.5px var(--mono); color: var(--muted); }
+        .legend span { display: inline-flex; align-items: center; gap: 6px; }
+        .legend i { width: 9px; height: 9px; border-radius: 50%; display: inline-block; box-shadow: 0 0 8px currentColor; }
+        .legend i.diamond { border-radius: 1px; transform: rotate(45deg); }
+        .legend i.ring { background: transparent !important; border: 2px solid #fbbf24; }
+
+        /* ---------- center messages */
+        #hint { position: fixed; z-index: 3; left: 50%; top: 50%; transform: translate(-50%, -50%); padding: 28px 32px; text-align: center; max-width: 440px; }
+        #hint[hidden] { display: none; }
+        #hint h2 { margin: 0 0 8px; font: 600 16px var(--mono); }
+        #hint p { margin: 0; color: var(--muted); }
+        #hint .kbd { margin: 0 2px; }
+        #toast { position: fixed; z-index: 8; left: 50%; bottom: 28px; transform: translateX(-50%); padding: 10px 16px; font: 12px var(--mono); color: var(--muted); }
+        #toast[hidden] { display: none; }
+        #tip { position: fixed; z-index: 9; pointer-events: none; padding: 6px 10px; border-radius: 8px; font: 12px var(--mono);
+            background: rgba(3, 10, 20, .92); border: 1px solid var(--line-strong); max-width: 520px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        #tip[hidden] { display: none; }
+        #tip .where { color: var(--amber); font-size: 11px; }
+
+        @media (max-width: 1500px) { .runmeta { display: none; } }
+        @media (max-width: 1300px) {
+            #topbar { right: 20px; }
+            #searchbox { top: 92px; }
+            #drawer { top: 170px; }
+            .runmeta { display: none; }
         }
-        #overlay[hidden] { display: none; }
-        aside { overflow: auto; padding: 16px; background: var(--panel); border-left: 1px solid var(--border); }
-        aside h2 { margin: 0 0 4px; font-size: 15px; overflow-wrap: anywhere; }
-        aside h3 { margin: 18px 0 6px; font-size: 12px; text-transform: uppercase; letter-spacing: .6px; color: var(--muted); }
-        aside .muted { color: var(--muted); overflow-wrap: anywhere; }
-        aside .note { margin-top: 8px; padding: 6px 8px; border-radius: 6px; background: var(--bg); color: var(--muted); }
-        aside ul { list-style: none; margin: 0; padding: 0; }
-        aside li { margin: 2px 0; }
-        aside button.link { width: 100%; text-align: left; padding: 5px 8px; border: 0; border-radius: 5px; overflow-wrap: anywhere; }
-        aside button.link:hover { background: var(--bg); }
-        .badge { display: inline-block; margin-top: 6px; padding: 1px 8px; border-radius: 10px; background: var(--entry); color: #fff; font-size: 11px; }
-        .legend div { display: flex; align-items: center; gap: 8px; margin: 4px 0; }
-        .swatch { width: 14px; height: 14px; border-radius: 3px; border: 2px solid; }
-        .dot { width: 10px; height: 10px; border-radius: 50%; }
-        .diamond { width: 10px; height: 10px; transform: rotate(45deg); }
-        .dash { width: 18px; border-top: 2px dashed var(--muted); }
-        .dots { width: 18px; border-top: 2px dotted var(--muted); }
-        .hier { width: 18px; border-top: 2px solid #9b6dff; position: relative; }
-        .ghost { width: 14px; height: 14px; border-radius: 3px; border: 2px dotted #80808a; opacity: .5; }
-        .dashbox { width: 14px; height: 14px; border-radius: 3px; border: 2px dashed #80808a; }
-        header label { color: var(--muted); display: flex; align-items: center; gap: 6px; cursor: pointer; }
-        .badge.info { background: var(--border); color: var(--text); }
-        .ring { width: 12px; height: 12px; border-radius: 50%; border: 3px solid #22c55e; }
-        #impact-btn[hidden] { display: none; }
-        aside .file { color: var(--muted); font-size: 12px; padding: 2px 8px; overflow-wrap: anywhere; }
     </style>
 </head>
 <body>
-<header>
-    <h1>Marga</h1>
-    <span class="stats" id="stats">Loading…</span>
-    <span class="spacer"></span>
-    <input id="search" type="search" placeholder="Search method, Class or Class.method" disabled>
-    <label title="Beans switched off by the active profiles"><input id="show-inactive" type="checkbox"> Show inactive beans</label>
-    <button id="impact-btn" type="button" hidden>Change impact</button>
-    <button id="reset" type="button">Reset</button>
+<div id="stage"><div id="cy"></div></div>
+
+<header id="topbar" class="glass">
+    <div class="brand">
+        <div class="logo"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="36" height="36" aria-hidden="true">
+            <defs>
+                <linearGradient id="mg-path" x1="15" y1="33" x2="49" y2="33" gradientUnits="userSpaceOnUse">
+                    <stop offset="0" stop-color="#06b6d4"/><stop offset="1" stop-color="#10b981"/>
+                </linearGradient>
+                <linearGradient id="mg-tile" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
+                    <stop offset="0" stop-color="#0b1a2e"/><stop offset="1" stop-color="#030a14"/>
+                </linearGradient>
+                <linearGradient id="mg-edge" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
+                    <stop offset="0" stop-color="#06b6d4" stop-opacity=".55"/><stop offset="1" stop-color="#10b981" stop-opacity=".15"/>
+                </linearGradient>
+                <filter id="mg-glow" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="2.2"/></filter>
+            </defs>
+            <rect x="1" y="1" width="62" height="62" rx="15" fill="url(#mg-tile)" stroke="url(#mg-edge)" stroke-width="1.5"/>
+            <path d="M15 47V19l17 17 17-17v28" fill="none" stroke="url(#mg-path)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" opacity=".55" filter="url(#mg-glow)"/>
+            <path d="M15 47V19l17 17 17-17v28" fill="none" stroke="url(#mg-path)" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="15" cy="19" r="4" fill="#030a14" stroke="#06b6d4" stroke-width="2.4"/>
+            <circle cx="32" cy="36" r="4" fill="#030a14" stroke="#0bb8b0" stroke-width="2.4"/>
+            <circle cx="49" cy="19" r="4" fill="#030a14" stroke="#0db89a" stroke-width="2.4"/>
+            <rect x="11" y="43" width="8" height="8" rx="1.2" transform="rotate(45 15 47)" fill="#f43f5e"/>
+            <circle cx="49" cy="47" r="9" fill="#10b981" opacity=".22"/>
+            <circle cx="49" cy="47" r="5" fill="#10b981" stroke="#d1fae5" stroke-width="1.6"/>
+        </svg></div>
+        Marga
+    </div>
+    <div class="pills" id="pills"></div>
+    <div class="runmeta" id="runmeta">Loading…</div>
 </header>
-<div id="cy"><div id="overlay">Loading graph data…</div></div>
-<aside id="panel"></aside>
+
+<div id="searchbox">
+    <div class="field">
+        <input id="search" type="search" autocomplete="off" spellcheck="false" placeholder="Search method, Class or Class.method" disabled>
+        <span class="kbd" id="kbd-hint">Ctrl K</span>
+    </div>
+    <div id="results" class="glass"></div>
+</div>
+
+<aside id="drawer" class="glass" aria-label="Inspector">
+    <div class="scroll" id="panel"></div>
+    <div class="foot" id="panel-foot"></div>
+</aside>
+
+<div id="lod" class="glass">
+    <div class="eyebrow">Level of detail</div>
+    <div class="seg" role="tablist">
+        <button id="lod-classes" type="button">Class clusters</button>
+        <button id="lod-methods" type="button" class="on">Method constellation</button>
+    </div>
+    <label class="toggle"><input id="show-inactive" type="checkbox"><span class="switch"></span>Show beans switched off by the profile</label>
+    <div class="legend" id="legend"></div>
+</div>
+
+<div id="hint" class="glass"><h2>Loading call graph…</h2><p></p></div>
+<div id="toast" class="glass" hidden></div>
+<div id="tip" hidden></div>
 
 <script>
     /*__CYTOSCAPE_JS__*/
@@ -119,8 +294,9 @@
         const FORMAT_VERSION = 2;
         const FULL_RENDER_LIMIT = 5000;   // above this many methods, only slices are drawn
         const SLICE_LIMIT = 1500;         // max methods drawn for one caller slice
+        const MAX_TRACES = 25;            // trace cards shown in the inspector
 
-        // ---------------------------------------------------------------- model
+        // ================================================================ model
         const G = {};
 
         function bytes(b64) {
@@ -137,9 +313,7 @@
                 manifest,
                 packages: core.packages,
                 pkgClassOffsets: i32(core.pkgClassOffsets),
-                modules: core.modules,
                 classNames: core.classNames,
-                classModule: i32(core.classModule),
                 classFlags: bytes(core.classFlags),
                 classMethodOffsets: i32(core.classMethodOffsets),
                 methodFlags: bytes(core.methodFlags),
@@ -158,11 +332,12 @@
             G.sigs = new Array(G.M);
             G.sigLoaded = new Set();
             G.namesLower = G.names.map(n => n.toLowerCase());
-            G.classFqnLower = null; // built on first search
+            G.classFqnLower = null;
+            G.entryCount = 0;
+            for (let m = 0; m < G.M; m++) if (G.methodFlags[m] & 1) G.entryCount++;
         }
 
-        // largest i with offsets[i] <= value
-        function owner(offsets, value) {
+        function owner(offsets, value) { // largest i with offsets[i] <= value
             let lo = 0, hi = offsets.length - 2;
             while (lo < hi) {
                 const mid = (lo + hi + 1) >> 1;
@@ -176,17 +351,39 @@
         const isEntry = m => (G.methodFlags[m] & 1) !== 0;
         const isCtor = m => (G.methodFlags[m] & 2) !== 0;
         const isAbstract = m => (G.methodFlags[m] & 16) !== 0;
+        const ENTRY_KINDS = ['', 'http', 'scheduled', 'event', 'kafka', 'rabbit', 'jms', 'sqs'];
+        const ENTRY_LABELS = { http: 'HTTP endpoint', scheduled: 'Scheduler', event: 'Event listener', kafka: 'Kafka consumer',
+            rabbit: 'RabbitMQ listener', jms: 'JMS listener', sqs: 'SQS listener', '': 'Entry point' };
+        const ENTRY_COLORS = { http: '#22d3ee', scheduled: '#fbbf24', event: '#c084fc', kafka: '#c084fc',
+            rabbit: '#c084fc', jms: '#c084fc', sqs: '#c084fc', '': '#22d3ee' };
+        const entryKind = m => ENTRY_KINDS[(G.methodFlags[m] >> 5) & 7] || '';
         const BEAN_STATES = ['active', 'inactive', 'conditional'];
         const beanState = c => BEAN_STATES[(G.classFlags[c] >> 5) & 3] || 'active';
+        const KINDS = ['Class', 'Interface', 'Abstract class'];
+        const classKind = c => KINDS[(G.classFlags[c] >> 3) & 3] || 'Class';
+        const STEREO = ['other', 'controller', 'service', 'repository', 'component'];
+        const stereotypeOf = c => STEREO[G.classFlags[c] & 7] || 'other';
+        const STEREOTYPES = {
+            controller: { label: 'Controller', color: '#06b6d4', core: '#083344' },
+            service:    { label: 'Service',    color: '#8b5cf6', core: '#2e1065' },
+            repository: { label: 'Repository', color: '#10b981', core: '#022c22' },
+            component:  { label: 'Component',  color: '#f59e0b', core: '#451a03' },
+            other:      { label: 'Other',      color: '#64748b', core: '#0f172a' }
+        };
+        const stereo = c => STEREOTYPES[stereotypeOf(c)];
+
         let showInactive = false;
         const classShown = c => showInactive || beanState(c) !== 'inactive';
         const methodShown = m => classShown(classOf(m));
 
-        /** Methods that override / implement m, transitively (e.g. interface -> abstract class -> class). */
-        function implementationsOf(m) {
+        const methodName = m => isCtor(m) ? `new ${G.classNames[classOf(m)]}` : G.names[G.nameIdx[m]];
+        const methodLabel = m => `${methodName(m)}(${G.sigs[m] ?? '…'})`;
+        const qualifiedLabel = m => isCtor(m) ? methodLabel(m) : `${G.classNames[classOf(m)]}.${methodLabel(m)}`;
+        const classMethods = c => { const ids = []; for (let m = G.classMethodOffsets[c]; m < G.classMethodOffsets[c + 1]; m++) ids.push(m); return ids; };
+
+        function implementationsOf(m) { // transitive: interface -> abstract class -> class
             const found = [], seen = new Set([m]);
-            for (let head = -1, cur = m; ; cur = found[++head]) {
-                if (cur === undefined) break;
+            for (let head = -1, cur = m; cur !== undefined; cur = found[++head]) {
                 for (let e = G.implOffsets[cur]; e < G.implOffsets[cur + 1]; e++) {
                     const impl = G.implSources[e];
                     if (!seen.has(impl) && methodShown(impl)) { seen.add(impl); found.push(impl); }
@@ -194,20 +391,12 @@
             }
             return found;
         }
-        /** Declarations m directly overrides / implements (one hop up). */
         function declarationsOf(m) {
             const found = [];
             for (let e = G.ovrOffsets[m]; e < G.ovrOffsets[m + 1]; e++) found.push(G.ovrTargets[e]);
             return found;
         }
-        const STEREO = ['other', 'controller', 'service', 'repository', 'component'];
-        const stereotypeOf = c => STEREO[G.classFlags[c] & 7] || 'other';
-        const methodName = m => isCtor(m) ? `new ${G.classNames[classOf(m)]}` : G.names[G.nameIdx[m]];
-        const methodLabel = m => `${methodName(m)}(${G.sigs[m] ?? '…'})`;
-        const qualifiedLabel = m => isCtor(m) ? methodLabel(m) : `${G.classNames[classOf(m)]}.${methodLabel(m)}`;
-        const classMethods = c => { const ids = []; for (let m = G.classMethodOffsets[c]; m < G.classMethodOffsets[c + 1]; m++) ids.push(m); return ids; };
 
-        /** Loads parameter-list chunks covering the given methods. */
         async function ensureSignatures(methodIds) {
             const chunks = G.manifest.sigChunks;
             const needed = new Set();
@@ -226,10 +415,14 @@
             }));
         }
 
-        /** Breadth-first walk over reverse edges: the targets plus everything that reaches them. */
-        function callerSlice(targets, limit) {
-            const seen = new Set(targets);
-            const order = [...targets];
+        /**
+         * Breadth-first walk over reverse edges from the roots. `next` maps each caller to the
+         * method it calls on the way to a root, so any caller's path can be rebuilt.
+         */
+        function callerSlice(roots, limit) {
+            const seen = new Set(roots);
+            const next = new Map();
+            const order = [...roots];
             let truncated = false;
             for (let head = 0; head < order.length && !truncated; head++) {
                 const m = order[head];
@@ -238,76 +431,48 @@
                     if (seen.has(caller) || !methodShown(caller)) continue;
                     if (seen.size >= limit) { truncated = true; break; }
                     seen.add(caller);
+                    next.set(caller, m);
                     order.push(caller);
                 }
             }
-            return { ids: order, set: seen, truncated };
+            return { ids: order, set: seen, next, truncated };
         }
 
-        // ---------------------------------------------------------------- dom helpers
+        /** Shortest path entry -> ... -> root, one per entry point in the slice. */
+        function traces(slice) {
+            return slice.ids.filter(isEntry).map(entry => {
+                const path = [entry];
+                for (let cur = entry; slice.next.has(cur); cur = slice.next.get(cur)) path.push(slice.next.get(cur));
+                return path;
+            }).sort((a, b) => a.length - b.length);
+        }
+
+        // ================================================================ dom helpers
         const $ = id => document.getElementById(id);
-        const panel = $('panel'), overlay = $('overlay'), searchBox = $('search');
-        const css = getComputedStyle(document.documentElement);
-        const color = name => css.getPropertyValue(name).trim();
-        const STEREOTYPES = {
-            controller: { label: 'Controller', color: '#2f7de1' },
-            service:    { label: 'Service',    color: '#2e9e5b' },
-            repository: { label: 'Repository', color: '#b8742a' },
-            component:  { label: 'Component / Config', color: '#8a5cd1' },
-            other:      { label: 'Other class', color: '#80808a' }
-        };
-        const stereoColor = ele => (STEREOTYPES[ele.data('stereotype')] || STEREOTYPES.other).color;
+        const panel = $('panel'), foot = $('panel-foot'), drawer = $('drawer'), hint = $('hint'), searchBox = $('search'), results = $('results');
         const el = (tag, cls, text) => {
             const e = document.createElement(tag);
             if (cls) e.className = cls;
             if (text != null) e.textContent = text;
             return e;
         };
-        function showOverlay(text) { overlay.textContent = text; overlay.hidden = false; }
-        function hideOverlay() { overlay.hidden = true; }
-
-        function linkList(items, onClick, labelFn) {
-            const ul = el('ul');
-            items.forEach(item => {
-                const li = el('li');
-                const b = el('button', 'link', labelFn(item));
-                b.type = 'button';
-                b.addEventListener('click', () => onClick(item));
-                li.appendChild(b);
-                ul.appendChild(li);
-            });
-            return ul;
+        function showHint(title, text) {
+            hint.hidden = false;
+            hint.replaceChildren(el('h2', null, title));
+            if (text) { const p = el('p'); p.innerHTML = text; hint.appendChild(p); }
         }
-
-        function legend() {
-            const box = el('div', 'legend');
-            Object.values(STEREOTYPES).forEach(s => {
-                const row = el('div'), sw = el('span', 'swatch');
-                sw.style.borderColor = s.color;
-                sw.style.background = s.color + '22';
-                row.append(sw, el('span', null, s.label));
-                box.appendChild(row);
-            });
-            const rows = [
-                ['dot', color('--muted'), 'Method'],
-                ['diamond', color('--entry'), 'Entry point (endpoint, listener, scheduler)'],
-                ['dash', null, 'Call made inside a lambda / method reference'],
-                ['dots', null, 'May call: the body that runs depends on the runtime type'],
-                ['hier', null, 'Implements / overrides'],
-                ['dashbox', null, 'Conditional bean (@Conditional…, not evaluated)'],
-                ['ghost', null, 'Inactive bean under the active profiles'],
-                ...(G.impact ? [['ring', null, 'Changed in this diff']] : [])
-            ];
-            rows.forEach(([cls, bg, text]) => {
-                const row = el('div'), mark = el('span', cls);
-                if (bg) mark.style.background = bg;
-                row.append(mark, el('span', null, text));
-                box.appendChild(row);
-            });
-            return box;
+        const hideHint = () => { hint.hidden = true; };
+        let toastTimer;
+        function toast(text) {
+            const t = $('toast');
+            t.textContent = text; t.hidden = false;
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => { t.hidden = true; }, 1800);
         }
+        const fmt = n => n.toLocaleString();
 
-        // ---------------------------------------------------------------- cytoscape
+        // ================================================================ cytoscape
+        const EDGE = { direct: '#10b981', lambda: '#c084fc', dispatch: '#22d3ee', hier: '#f59e0b' };
         const cy = cytoscape({
             container: $('cy'),
             minZoom: 0.02,
@@ -315,90 +480,149 @@
             textureOnViewport: true,
             hideEdgesOnViewport: true,
             style: [
+                // class spheres
                 { selector: 'node[type="class"]', style: {
-                        'shape': 'round-rectangle', 'background-color': stereoColor, 'background-opacity': 0.1,
-                        'border-width': 1.5, 'border-color': stereoColor,
-                        'label': 'data(label)', 'text-valign': 'top', 'text-halign': 'center',
-                        'font-size': 13, 'font-weight': 600, 'color': color('--text'),
-                        'padding': '14px', 'width': 60, 'height': 30, 'min-zoomed-font-size': 5 }},
+                        'shape': 'ellipse', 'width': 'data(size)', 'height': 'data(size)',
+                        'background-fill': 'radial-gradient',
+                        'background-gradient-stop-colors': '#0f172a #0f172a #64748b',
+                        'background-gradient-stop-positions': '0% 62% 100%',
+                        'background-opacity': 0.9,
+                        'border-width': 1.5, 'border-color': 'data(color)', 'border-opacity': 0.55,
+                        'underlay-color': 'data(color)', 'underlay-opacity': 0.08, 'underlay-padding': 10, 'underlay-shape': 'ellipse',
+                        'label': 'data(label)', 'text-valign': 'top', 'text-halign': 'center', 'text-margin-y': 18,
+                        'font-family': 'JetBrains Mono, ui-monospace, Consolas, monospace', 'font-size': 12, 'font-weight': 700, 'color': '#e2e8f0',
+                        'text-background-color': 'data(core)', 'text-background-opacity': 0.95, 'text-background-shape': 'roundrectangle',
+                        'text-background-padding': 5, 'text-border-width': 1, 'text-border-color': 'data(color)', 'text-border-opacity': 0.7,
+                        'min-zoomed-font-size': 5, 'z-index': 1, 'z-index-compare': 'manual' }},
+                { selector: 'node[type="class"][stereo="controller"]', style: { 'background-gradient-stop-colors': '#03141c #051e29 #0e7490' } },
+                { selector: 'node[type="class"][stereo="service"]', style: { 'background-gradient-stop-colors': '#0d0720 #160c33 #6d28d9' } },
+                { selector: 'node[type="class"][stereo="repository"]', style: { 'background-gradient-stop-colors': '#021410 #03201a #047857' } },
+                { selector: 'node[type="class"][stereo="component"]', style: { 'background-gradient-stop-colors': '#140b02 #1f1204 #b45309' } },
+                { selector: 'node[type="class"][stereo="other"]', style: { 'background-gradient-stop-colors': '#070d18 #0b1322 #334155' } },
+                { selector: 'node[type="class"][state="conditional"]', style: { 'border-style': 'dashed', 'border-opacity': 0.9 } },
+                { selector: 'node[type="class"][state="inactive"]', style: { 'border-style': 'dotted', 'opacity': 0.45 } },
+                // methods
                 { selector: 'node[type="method"]', style: {
-                        'shape': 'ellipse', 'width': 10, 'height': 10, 'background-color': color('--muted'),
-                        'label': 'data(label)', 'font-size': 10, 'color': color('--muted'),
-                        'text-halign': 'right', 'text-valign': 'center', 'text-margin-x': 6,
-                        'text-wrap': 'ellipsis', 'text-max-width': '190px', 'min-zoomed-font-size': 7 }},
+                        'shape': 'ellipse', 'width': 9, 'height': 9, 'background-color': '#cbd5e1', 'background-opacity': 0.75,
+                        'label': 'data(label)', 'font-family': 'JetBrains Mono, ui-monospace, Consolas, monospace',
+                        'font-size': 9, 'color': '#94a3b8', 'text-valign': 'bottom', 'text-margin-y': 3,
+                        'min-zoomed-font-size': 15, 'z-index': 3, 'z-index-compare': 'manual' }},
                 { selector: 'node[type="method"][?entry]', style: {
-                        'shape': 'diamond', 'width': 14, 'height': 14, 'background-color': color('--entry') }},
+                        'shape': 'diamond', 'width': 13, 'height': 13, 'background-color': '#f43f5e', 'background-opacity': 1,
+                        'underlay-color': '#f43f5e', 'underlay-opacity': 0.25, 'underlay-padding': 3, 'underlay-shape': 'ellipse' }},
+                { selector: 'node[type="method"][?changed]', style: { 'border-width': 2.5, 'border-color': '#fbbf24' } },
+                // edges
                 { selector: 'edge', style: {
-                        'width': 0.8, 'curve-style': 'straight', 'opacity': 0.7, 'line-color': color('--edge'),
-                        'target-arrow-shape': 'triangle', 'target-arrow-color': color('--edge'), 'arrow-scale': 0.6 }},
-                { selector: 'edge[kind = 1]', style: { 'line-style': 'dashed' } },
-                { selector: 'edge[kind = 2]', style: { 'line-style': 'dotted', 'width': 1.4 } },
-                { selector: 'edge[?hier]', style: {
-                        'display': 'none', 'line-color': '#9b6dff', 'target-arrow-color': '#9b6dff',
-                        'target-arrow-shape': 'triangle', 'target-arrow-fill': 'hollow', 'arrow-scale': 1, 'width': 1.4 }},
-                { selector: 'node[state="conditional"]', style: { 'border-style': 'dashed' } },
-                { selector: 'node[state="inactive"]', style: { 'border-style': 'dotted', 'opacity': 0.45 } },
-                { selector: '.faded', style: { 'opacity': 0.08 } },
-                { selector: 'node.hl[type="method"]', style: {
-                        'background-color': color('--highlight'), 'color': color('--text'), 'font-size': 10 }},
-                { selector: 'node.hl[type="method"][?entry]', style: { 'background-color': color('--entry') } },
+                        'width': 0.8, 'curve-style': 'straight', 'line-color': '#334155', 'opacity': 0.35,
+                        'target-arrow-shape': 'triangle', 'target-arrow-color': '#334155', 'arrow-scale': 0.55,
+                        'z-index': 2, 'z-index-compare': 'manual' }},
+                { selector: 'edge[kind = 1]', style: { 'line-style': 'dashed', 'line-dash-pattern': [6, 6] } },
+                { selector: 'edge[kind = 2]', style: { 'line-style': 'dashed', 'line-dash-pattern': [2, 5] } },
+                { selector: 'edge[?hier]', style: { 'display': 'none', 'target-arrow-fill': 'hollow' } },
+                { selector: 'edge[type="classEdge"]', style: { 'width': 'data(width)', 'opacity': 0.4, 'line-color': '#475569', 'target-arrow-color': '#475569' } },
+                // level of detail
+                { selector: '.lod-off', style: { 'display': 'none' } },
+                // highlighting
+                { selector: '.faded', style: { 'opacity': 0.07 } },
+                { selector: 'node[type="class"].faded', style: { 'opacity': 0.16 } },
+                { selector: 'node[type="class"].hl', style: { 'border-opacity': 1, 'underlay-opacity': 0.22, 'underlay-padding': 16 } },
+                { selector: 'node[type="method"].hl', style: {
+                        'background-color': '#f8fafc', 'background-opacity': 1, 'color': '#e2e8f0', 'font-size': 10.5, 'min-zoomed-font-size': 6,
+                        'text-background-color': '#030a14', 'text-background-opacity': 0.8, 'text-background-padding': 2, 'text-background-shape': 'roundrectangle' }},
+                { selector: 'node[type="method"][?entry].hl', style: { 'background-color': '#f43f5e' } },
                 { selector: 'edge.hl', style: {
-                        'width': 2, 'opacity': 1, 'line-color': color('--highlight'), 'target-arrow-color': color('--highlight') }},
-                { selector: 'node[?changed]', style: { 'border-width': 3, 'border-color': '#22c55e' } },
-                { selector: 'node.focus[type="method"]', style: {
-                        'width': 16, 'height': 16, 'border-width': 3, 'border-color': color('--text') }},
-                { selector: 'node.focus[type="class"]', style: { 'border-width': 4 } },
-                { selector: 'edge.hl[?hier]', style: {
-                        'display': 'element', 'line-color': '#9b6dff', 'target-arrow-color': '#9b6dff', 'width': 1.6 }}
+                        'width': 2.2, 'opacity': 1, 'line-color': EDGE.direct, 'target-arrow-color': EDGE.direct,
+                        'line-style': 'dashed', 'line-dash-pattern': [14, 4],
+                        'underlay-color': EDGE.direct, 'underlay-opacity': 0.18, 'underlay-padding': 3 }},
+                { selector: 'edge.hl[kind = 1]', style: { 'line-color': EDGE.lambda, 'target-arrow-color': EDGE.lambda, 'underlay-color': EDGE.lambda, 'line-dash-pattern': [6, 6] } },
+                { selector: 'edge.hl[kind = 2]', style: { 'line-color': EDGE.dispatch, 'target-arrow-color': EDGE.dispatch, 'underlay-color': EDGE.dispatch, 'line-dash-pattern': [2, 5] } },
+                { selector: 'edge.hl[?hier]', style: { 'display': 'element', 'line-color': EDGE.hier, 'target-arrow-color': EDGE.hier, 'underlay-color': EDGE.hier, 'line-dash-pattern': [16, 0], 'width': 1.6 } },
+                { selector: 'edge.hl[type="classEdge"]', style: { 'line-color': EDGE.direct, 'target-arrow-color': EDGE.direct, 'underlay-color': EDGE.direct } },
+                { selector: 'node[type="method"].focus', style: {
+                        'width': 16, 'height': 16, 'background-color': '#10b981', 'border-width': 3, 'border-color': '#d1fae5',
+                        'underlay-color': '#10b981', 'underlay-opacity': 0.4, 'underlay-padding': 8, 'underlay-shape': 'ellipse', 'font-size': 12, 'font-weight': 700, 'color': '#f8fafc' }},
+                { selector: 'node[type="class"].focus', style: { 'border-width': 3, 'border-opacity': 1 } },
+                { selector: '.dim-trace', style: { 'opacity': 0.12 } }
             ]
         });
 
-        /** Cytoscape elements for a set of methods: their classes, the methods, and calls among them. */
+        // flowing dashes on highlighted edges + a breathing beacon on the focused method
+        let animating = false;
+        function startAnimation() {
+            if (animating) return;
+            animating = true;
+            let offset = 0, t0 = performance.now();
+            const tick = now => {
+                const edges = cy.edges('.hl');
+                const focus = cy.nodes('node[type="method"].focus');
+                if (!edges.length && !focus.length) { animating = false; return; }
+                offset = (offset - 0.6) % 1000;
+                if (edges.length <= 800) edges.style('line-dash-offset', offset);
+                const pulse = 6 + 5 * (0.5 + 0.5 * Math.sin((now - t0) / 380));
+                focus.style('underlay-padding', pulse);
+                requestAnimationFrame(tick);
+            };
+            requestAnimationFrame(tick);
+        }
+
+        /** Elements for a set of methods: class spheres, methods, calls among them, hierarchy, class-level edges. */
         function buildElements(methodIds) {
             const inSet = new Set(methodIds);
             const classes = new Set(methodIds.map(classOf));
             const elements = [];
-            classes.forEach(c => elements.push({ group: 'nodes', data: {
-                    id: 'c' + c, type: 'class', cls: c, label: G.classNames[c], stereotype: stereotypeOf(c), state: beanState(c) } }));
+            classes.forEach(c => {
+                const s = stereo(c);
+                elements.push({ group: 'nodes', data: {
+                        id: 'c' + c, type: 'class', cls: c, label: G.classNames[c], state: beanState(c),
+                        color: s.color, core: s.core, stereo: stereotypeOf(c), size: 60 } });
+            });
             methodIds.forEach(m => elements.push({ group: 'nodes', data: {
-                    id: 'm' + m, type: 'method', mid: m, parent: 'c' + classOf(m), label: methodLabel(m), entry: isEntry(m),
+                    id: 'm' + m, type: 'method', mid: m, cls: classOf(m), label: methodLabel(m), entry: isEntry(m),
                     changed: !!(G.impact && G.impact.changedSet.has(m)) } }));
+            const classEdges = new Map();
             methodIds.forEach(m => {
                 for (let e = G.revOffsets[m]; e < G.revOffsets[m + 1]; e++) {
                     const caller = G.revSources[e];
-                    if (inSet.has(caller)) elements.push({ group: 'edges', data: {
-                            id: 'e' + e, source: 'm' + caller, target: 'm' + m, kind: G.revKinds[e] } });
+                    if (!inSet.has(caller)) continue;
+                    elements.push({ group: 'edges', data: { id: 'e' + e, source: 'm' + caller, target: 'm' + m, kind: G.revKinds[e] } });
+                    const a = classOf(caller), b = classOf(m);
+                    if (a !== b) classEdges.set(a + '_' + b, (classEdges.get(a + '_' + b) || 0) + 1);
                 }
-            });
-            // hierarchy edges: implementation -> declaration it implements
-            methodIds.forEach(m => {
                 for (let e = G.ovrOffsets[m]; e < G.ovrOffsets[m + 1]; e++) {
                     const declaration = G.ovrTargets[e];
                     if (inSet.has(declaration)) elements.push({ group: 'edges', data: {
                             id: 'h' + e, source: 'm' + m, target: 'm' + declaration, hier: true } });
                 }
             });
+            classEdges.forEach((count, key) => {
+                const [a, b] = key.split('_');
+                elements.push({ group: 'edges', data: { id: 'k' + key, type: 'classEdge', source: 'c' + a, target: 'c' + b,
+                        width: Math.min(6, 0.8 + Math.log2(count + 1)) } });
+            });
             return elements;
         }
 
-        // ---------- two-level layout: method grid inside class boxes, force layout for the boxes
-        const ROW = 22, COL = 220, MAX_ROWS = 18, PAD = 12, GAP = 40;
+        // ---------- constellation layout: methods on a sunflower spiral inside their class sphere,
+        //            spheres placed with a force layout on the class-level graph
+        const SPACING = 28, PAD = 26, GAP = 40, GOLDEN = Math.PI * (3 - Math.sqrt(5));
 
-        function removeOverlaps(rects, gap, maxIter) {
+        function removeOverlaps(circles, gap, maxIter) {
             for (let it = 0; it < maxIter; it++) {
                 let moved = false;
-                rects.sort((a, b) => (a.x - a.w / 2) - (b.x - b.w / 2));
-                for (let i = 0; i < rects.length; i++) {
-                    const a = rects[i];
-                    for (let j = i + 1; j < rects.length; j++) {
-                        const b = rects[j];
-                        if (b.x - b.w / 2 > a.x + a.w / 2 + gap) break;
-                        const ox = (a.w + b.w) / 2 + gap - Math.abs(a.x - b.x);
-                        const oy = (a.h + b.h) / 2 + gap - Math.abs(a.y - b.y);
-                        if (ox <= 0 || oy <= 0) continue;
+                circles.sort((a, b) => (a.x - a.r) - (b.x - b.r));
+                for (let i = 0; i < circles.length; i++) {
+                    const a = circles[i];
+                    for (let j = i + 1; j < circles.length; j++) {
+                        const b = circles[j];
+                        if (b.x - b.r > a.x + a.r + gap) break;
+                        const dx = b.x - a.x, dy = b.y - a.y;
+                        const dist = Math.hypot(dx, dy) || 0.01;
+                        const overlap = a.r + b.r + gap - dist;
+                        if (overlap <= 0) continue;
                         moved = true;
-                        if (ox < oy) { const s = (a.x <= b.x ? -1 : 1) * ox / 2; a.x += s; b.x -= s; }
-                        else         { const s = (a.y <= b.y ? -1 : 1) * oy / 2; a.y += s; b.y -= s; }
+                        const ux = dx / dist, uy = dy / dist;
+                        a.x -= ux * overlap / 2; a.y -= uy * overlap / 2;
+                        b.x += ux * overlap / 2; b.y += uy * overlap / 2;
                     }
                 }
                 if (!moved) return;
@@ -406,52 +630,48 @@
         }
 
         const methodOrder = (a, b) =>
-            (b.data('entry') - a.data('entry')) || a.data('label').localeCompare(b.data('label'));
+            (b.data('entry') - a.data('entry')) || (b.data('changed') - a.data('changed')) || a.data('label').localeCompare(b.data('label'));
 
         function layoutGraph() {
             const classes = cy.nodes('[type="class"]');
-            const boxes = new Map();
-            classes.forEach(cls => {
-                const n = cls.children().length;
-                const cols = Math.max(1, Math.ceil(n / MAX_ROWS));
-                const rows = Math.max(1, Math.ceil(n / cols));
-                boxes.set(cls.id(), { rows, w: cols * COL + PAD * 2, h: rows * ROW + PAD * 2 + 20 });
+            const members = new Map();
+            cy.nodes('[type="method"]').forEach(n => {
+                const key = 'c' + n.data('cls');
+                if (!members.has(key)) members.set(key, []);
+                members.get(key).push(n);
             });
-            const classEdges = new Set();
-            cy.edges().forEach(e => {
-                const a = e.source().parent().id(), b = e.target().parent().id();
-                if (a && b && a !== b) classEdges.add(a < b ? a + '\n' + b : b + '\n' + a);
+            const radius = new Map();
+            classes.forEach(c => {
+                const n = (members.get(c.id()) || []).length;
+                radius.set(c.id(), Math.max(34, SPACING * Math.sqrt(n) * 0.75 + PAD));
             });
             const helper = cytoscape({
                 headless: true, styleEnabled: true,
                 elements: [
-                    ...classes.map(c => ({ group: 'nodes', data: { id: c.id(), w: boxes.get(c.id()).w, h: boxes.get(c.id()).h } })),
-                    ...[...classEdges].map((k, i) => {
-                        const [source, target] = k.split('\n');
-                        return { group: 'edges', data: { id: 'c' + i, source, target } };
-                    })
+                    ...classes.map(c => ({ group: 'nodes', data: { id: c.id(), d: radius.get(c.id()) * 2 } })),
+                    ...cy.edges('[type="classEdge"]').map(e => ({ group: 'edges', data: { id: e.id(), source: e.source().id(), target: e.target().id() } }))
                 ],
-                style: [{ selector: 'node', style: { width: 'data(w)', height: 'data(h)' } }]
+                style: [{ selector: 'node', style: { width: 'data(d)', height: 'data(d)' } }]
             });
             return new Promise(resolve => {
                 const layout = helper.layout({
                     name: 'cose', animate: false, randomize: true,
-                    nodeOverlap: 40, nodeRepulsion: () => 400000, idealEdgeLength: () => 120,
-                    componentSpacing: 120, gravity: 1, numIter: 1500
+                    nodeOverlap: 40, nodeRepulsion: () => 400000, idealEdgeLength: () => 110,
+                    componentSpacing: 140, gravity: 1, numIter: 1500
                 });
                 layout.one('layoutstop', () => {
-                    const rects = helper.nodes().map(n => ({
-                        id: n.id(), x: n.position('x'), y: n.position('y'), w: n.data('w'), h: n.data('h') }));
+                    const circles = helper.nodes().map(n => ({ id: n.id(), x: n.position('x'), y: n.position('y'), r: radius.get(n.id()) }));
                     helper.destroy();
-                    removeOverlaps(rects, GAP, 800);
-                    cy.batch(() => rects.forEach(r => {
-                        const box = boxes.get(r.id);
-                        const cls = cy.getElementById(r.id);
-                        const methods = cls.children().sort(methodOrder);
-                        if (methods.empty()) { cls.position({ x: r.x, y: r.y }); return; }
-                        const left = r.x - r.w / 2 + PAD, top = r.y - r.h / 2 + PAD + 20;
-                        methods.forEach((m, i) => m.position({
-                            x: left + Math.floor(i / box.rows) * COL, y: top + (i % box.rows) * ROW }));
+                    removeOverlaps(circles, GAP, 800);
+                    cy.batch(() => circles.forEach(c => {
+                        const node = cy.getElementById(c.id);
+                        node.position({ x: c.x, y: c.y });
+                        node.data('size', c.r * 2);
+                        const list = (members.get(c.id) || []).sort(methodOrder);
+                        list.forEach((m, i) => {
+                            const r = SPACING * 0.75 * Math.sqrt(i + (list.length > 1 ? 0.5 : 0));
+                            m.position({ x: c.x + r * Math.cos(i * GOLDEN), y: c.y + r * Math.sin(i * GOLDEN) });
+                        });
                     }));
                     resolve();
                 });
@@ -459,151 +679,258 @@
             });
         }
 
+        // spheres carry their methods when dragged
+        let dragFrom = null;
+        cy.on('grab', 'node[type="class"]', e => { dragFrom = { ...e.target.position() }; });
+        cy.on('drag', 'node[type="class"]', e => {
+            if (!dragFrom) return;
+            const p = e.target.position(), dx = p.x - dragFrom.x, dy = p.y - dragFrom.y;
+            dragFrom = { ...p };
+            cy.nodes(`[type="method"][cls = ${e.target.data('cls')}]`).forEach(m => {
+                const q = m.position(); m.position({ x: q.x + dx, y: q.y + dy });
+            });
+        });
+        cy.on('free', 'node[type="class"]', () => { dragFrom = null; });
+
         async function draw(methodIds) {
             await ensureSignatures(methodIds);
             cy.elements().remove();
             cy.add(buildElements(methodIds));
+            applyLod();
             await layoutGraph();
-            cy.fit(undefined, 30);
+            fitVisible(cy.elements(), false, 40);
         }
 
-        // ---------------------------------------------------------------- views
-        let fullMode = false;
-        const visibleMethods = () => { const ids = []; for (let m = 0; m < G.M; m++) if (methodShown(m)) ids.push(m); return ids; };
+        // ---------- level of detail
+        let lod = 'methods';
+        function applyLod() {
+            cy.batch(() => {
+                const methodLevel = cy.nodes('[type="method"]').union(cy.edges('[type!="classEdge"]'));
+                const classLevel = cy.edges('[type="classEdge"]');
+                if (lod === 'methods') { methodLevel.removeClass('lod-off'); classLevel.addClass('lod-off'); }
+                else { methodLevel.addClass('lod-off'); classLevel.removeClass('lod-off'); }
+            });
+            $('lod-methods').classList.toggle('on', lod === 'methods');
+            $('lod-classes').classList.toggle('on', lod === 'classes');
+        }
+        $('lod-methods').addEventListener('click', () => { lod = 'methods'; applyLod(); });
+        $('lod-classes').addEventListener('click', () => { lod = 'classes'; applyLod(); });
 
-        $('show-inactive').addEventListener('change', async evt => {
-            showInactive = evt.target.checked;
-            if (fullMode) {
-                showOverlay('Laying out…');
-                await draw(visibleMethods());
-                hideOverlay();
-            }
-            if (lastSelection) selectMethods(...lastSelection);
-        });
-
-        function showIntro() {
-            const parts = [el('h2', null, 'Explore')];
-            parts.push(el('p', 'muted', fullMode
-                ? 'Click a method to highlight every method that eventually calls it. Click a class to trace all of its methods. Esc resets.'
-                : `This code base has ${G.M.toLocaleString()} methods, too many to draw at once. Search for a class or method to see everything that calls it.`));
-            parts.push(el('h3', null, 'Legend'), legend());
-            panel.replaceChildren(...parts);
+        /** Fits elements into the part of the canvas not covered by the top bar and the inspector. */
+        function fitVisible(eles, withDrawer, padding = 70) {
+            if (!eles || eles.empty()) return;
+            const bb = eles.boundingBox();
+            const rect = cy.container().getBoundingClientRect();
+            const wide = window.innerWidth > 1300;
+            const left = 20, right = withDrawer ? (wide ? 560 : 20) : 20, top = wide ? 96 : 170, bottom = 20;
+            const w = Math.max(100, rect.width - left - right - 2 * padding);
+            const h = Math.max(100, rect.height - top - bottom - 2 * padding);
+            const zoom = Math.max(cy.minZoom(), Math.min(1.8, w / Math.max(bb.w, 1), h / Math.max(bb.h, 1)));
+            const pan = {
+                x: left + padding + w / 2 - zoom * (bb.x1 + bb.w / 2),
+                y: top + padding + h / 2 - zoom * (bb.y1 + bb.h / 2)
+            };
+            cy.animate({ zoom, pan, duration: 450, easing: 'ease-out-cubic' });
         }
 
-        function badges(c) {
-            const state = beanState(c);
-            const parts = [];
-            if (state === 'inactive') parts.push(el('span', 'badge info', `Inactive under profile ${G.manifest.profiles.join(', ')}`));
-            if (state === 'conditional') parts.push(el('span', 'badge info', 'Conditional bean'));
-            return parts;
-        }
-        const withState = m => {
-            const state = beanState(classOf(m));
-            return qualifiedLabel(m) + (state === 'active' ? '' : ` (${state})`);
-        };
-
-        function showSelection(sel) {
-            const { title, subtitle, isEntryPoint, classId, targets, impls, slice } = sel;
-            const rootSet = new Set([...targets, ...impls]);
-            const entries = slice.ids.filter(isEntry);
-            const upstream = slice.ids.filter(m => !rootSet.has(m));
-            const parts = [el('h2', null, title), el('div', 'muted', subtitle)];
-            if (isEntryPoint) parts.push(el('span', 'badge', 'Entry point'));
-            parts.push(...badges(classId !== undefined ? classId : classOf(targets[0])));
-            if (slice.truncated) parts.push(el('div', 'note', `Large caller tree: showing the nearest ${SLICE_LIMIT.toLocaleString()} methods only.`));
-
-            if (impls.length || targets.some(isAbstract)) {
-                parts.push(el('h3', null, `Implementations (${impls.length})`));
-                parts.push(impls.length
-                    ? linkList(impls, m => selectMethods([m]), withState)
-                    : el('p', 'muted', showInactive ? 'None in the scanned code (e.g. a Spring Data proxy).'
-                        : 'None active. Try "Show inactive beans".'));
-            }
-
-            parts.push(el('h3', null, `Entry points reaching this (${entries.length})`));
-            parts.push(entries.length
-                ? linkList(entries, centerOn, qualifiedLabel)
-                : el('p', 'muted', 'None found. Either unused, or called via reflection, events, or a JDK/library interface (Runnable, Function…) that Marga does not follow.'));
-
-            parts.push(el('h3', null, `Upstream callers (${upstream.length})`));
-            if (upstream.length) parts.push(linkList(upstream.slice(0, 200), m => selectMethods([m]), withState));
-            panel.replaceChildren(...parts);
-        }
-
-        function centerOn(m) {
-            const node = cy.getElementById('m' + m);
-            if (node.nonempty()) cy.animate({ center: { eles: node }, zoom: Math.max(cy.zoom(), 1.2), duration: 300 });
-        }
-
-        function highlight(methodIds, focusIds) {
+        function highlight(methodIds, focusIds, fitIds = methodIds) {
             const nodes = cy.collection(methodIds.map(m => cy.getElementById('m' + m)));
             const edges = nodes.edgesWith(nodes);
-            const visible = nodes.union(edges).union(nodes.parents());
+            const spheres = cy.collection([...new Set(methodIds.map(m => 'c' + classOf(m)))].map(id => cy.getElementById(id)));
+            const classEdges = spheres.edgesWith(spheres).filter('[type="classEdge"]');
+            const lit = nodes.union(edges).union(spheres).union(classEdges);
             cy.batch(() => {
-                cy.elements().removeClass('hl focus').addClass('faded');
-                visible.removeClass('faded');
-                nodes.union(edges).addClass('hl');
+                cy.elements().removeClass('hl focus dim-trace').addClass('faded');
+                lit.removeClass('faded').addClass('hl');
                 focusIds.forEach(m => cy.getElementById('m' + m).addClass('focus'));
             });
-            cy.animate({ fit: { eles: visible, padding: 40 }, duration: 350 });
+            const fitNodes = cy.collection(fitIds.map(m => cy.getElementById('m' + m)));
+            fitVisible(fitNodes.union(cy.collection([...new Set(fitIds.map(m => 'c' + classOf(m)))].map(id => cy.getElementById(id)))), true);
+            startAnimation();
         }
 
+        /** Emphasise one trace (entry -> ... -> target) inside the current highlight. */
+        function emphasiseTrace(path) {
+            const nodes = cy.collection(path.map(m => cy.getElementById('m' + m)));
+            const spheres = cy.collection([...new Set(path.map(m => 'c' + classOf(m)))].map(id => cy.getElementById(id)));
+            const keep = nodes.union(nodes.edgesWith(nodes)).union(spheres).union(spheres.edgesWith(spheres).filter('[type="classEdge"]'));
+            cy.batch(() => {
+                cy.elements('.hl').difference(keep).addClass('dim-trace');
+                keep.removeClass('dim-trace');
+            });
+            fitVisible(keep, true, 110);
+        }
+
+        // ---------- tooltip on hover
+        const tip = $('tip');
+        cy.on('mouseover', 'node', e => {
+            const n = e.target;
+            tip.replaceChildren();
+            if (n.data('type') === 'method') {
+                const m = n.data('mid');
+                tip.append(el('div', null, methodLabel(m)), el('div', 'where', classFqn(classOf(m))));
+            } else {
+                const c = n.data('cls');
+                tip.append(el('div', null, `${G.classNames[c]} · ${classMethods(c).length} methods`), el('div', 'where', classFqn(c)));
+            }
+            tip.hidden = false;
+        });
+        cy.on('mousemove', e => { tip.style.left = (e.originalEvent.clientX + 14) + 'px'; tip.style.top = (e.originalEvent.clientY + 14) + 'px'; });
+        cy.on('mouseout', 'node', () => { tip.hidden = true; });
+
+        // ================================================================ views
+        let fullMode = false;
         let lastSelection = null;
+        let copyText = '';
 
-        /** Full mode: highlight inside the drawn graph. Focus mode: draw just these methods. */
-        async function present(drawnIds, focusIds) {
+        async function present(drawnIds, focusIds, fitIds) {
+            hideHint();
             if (!fullMode) {
-                showOverlay('Laying out…');
+                showHint('Laying out…', '');
                 await draw(drawnIds);
-                hideOverlay();
+                hideHint();
             }
-            highlight(drawnIds, focusIds);
+            highlight(drawnIds, focusIds, fitIds || drawnIds);
         }
 
-        /** Changed methods of the diff and everything that (transitively) calls them. */
-        async function showImpact() {
-            lastSelection = null;
-            const changed = G.impact.changed.map(c => c.m).filter(methodShown);
-            const slice = callerSlice(changed, fullMode ? Infinity : SLICE_LIMIT);
-            if (slice.ids.length) await present(slice.ids, changed);
-            await ensureSignatures(slice.ids.slice(0, 600));
+        function openDrawer(nodes, footNodes) {
+            panel.replaceChildren(...nodes);
+            foot.replaceChildren(...footNodes);
+            panel.scrollTop = 0;
+            drawer.classList.add('open');
+        }
+        function closeDrawer() { drawer.classList.remove('open'); }
 
-            const entries = slice.ids.filter(isEntry);
-            const parts = [
-                el('h2', null, 'Change impact'),
-                el('div', 'muted', `Compared against ${G.impact.base} · profile ${G.manifest.profiles.join(', ')}`),
-                el('div', 'note', `${changed.length} methods changed · ${slice.ids.length} impacted · ${entries.length} entry points affected`)
-            ];
-            if (slice.truncated) parts.push(el('div', 'note', `Large impact: showing the nearest ${SLICE_LIMIT.toLocaleString()} methods only (impact.md has the full list).`));
+        function drawerHead(chipText, chipColor, meta) {
+            const head = el('div', 'drawer-head');
+            const chip = el('span', 'chip', chipText);
+            chip.style.color = chipColor;
+            chip.style.borderColor = chipColor + '66';
+            chip.style.background = chipColor + '14';
+            const close = el('button', 'close', '×');
+            close.type = 'button';
+            close.title = 'Close (Esc)';
+            close.addEventListener('click', reset);
+            head.append(chip, el('span', 'head-meta', meta), close);
+            return head;
+        }
 
-            parts.push(el('h3', null, `Affected entry points (${entries.length})`));
-            parts.push(entries.length ? linkList(entries, m => selectMethods([m]), withState)
-                : el('p', 'muted', 'None found.'));
+        function block(title, accent, ...content) {
+            const s = el('section', 'block');
+            const t = el('div', 'eyebrow', title);
+            if (accent) t.appendChild(el('span', 'accent', accent));
+            s.append(t, ...content);
+            return s;
+        }
 
-            parts.push(el('h3', null, `Changed methods (${changed.length})`));
-            const byMethod = new Map(G.impact.changed.map(c => [c.m, c]));
-            parts.push(linkList(changed, m => selectMethods([m]), m => {
-                const c = byMethod.get(m);
-                const where = c.lines.length ? `line ${c.lines.join(', ')}` : 'contains a changed anonymous class';
-                return `${withState(m)} — ${where}`;
-            }));
+        function stat(label, value, color) {
+            const s = el('div', 'stat');
+            const v = el('div', 'value', value);
+            if (color) v.style.color = color;
+            s.append(el('div', 'eyebrow', label), v);
+            return s;
+        }
 
-            if (G.impact.unmapped.length) {
-                parts.push(el('h3', null, `Not mapped to a method (${G.impact.unmapped.length})`));
-                G.impact.unmapped.forEach(u => {
-                    parts.push(el('div', 'file', `${u.file}${u.lines.length ? ':' + u.lines.join(', ') : ''}`));
-                    parts.push(el('div', 'file', `↳ ${u.reason}`));
+        function stateTag(c) {
+            const state = beanState(c);
+            return el('span', 'tag ' + (state === 'active' ? 'ok' : state === 'inactive' ? 'off' : 'cond'),
+                state === 'active' ? 'Active' : state === 'inactive' ? `Off · ${G.manifest.profiles.join(', ')}` : '@Conditional');
+        }
+
+        function traceCards(paths, rootsSet) {
+            const wrap = el('div');
+            paths.slice(0, MAX_TRACES).forEach((path, i) => {
+                const entry = path[0], kind = entryKind(entry);
+                const card = el('div', 'trace');
+                const head = el('div', 'trace-head', `Route ${i + 1} · ${ENTRY_LABELS[kind]}`);
+                head.style.color = ENTRY_COLORS[kind];
+                head.appendChild(el('span', 'right', path.length === 1 ? 'is the target' : `${path.length - 1} hop${path.length === 2 ? '' : 's'}`));
+                card.appendChild(head);
+                path.forEach((m, depth) => {
+                    const final = depth === path.length - 1 && rootsSet.has(m);
+                    const hop = el('div', 'hop ' + (depth === 0 ? 'entry' : final ? 'final' : 'mid'));
+                    hop.style.paddingLeft = final ? '' : (depth * 14) + 'px';
+                    if (depth > 0 && !final) hop.appendChild(el('span', 'arrow', '↳ '));
+                    hop.appendChild(document.createTextNode((final ? '✔ ' : '') + qualifiedLabel(m)));
+                    if (depth > 0 && !final && G.revKinds) {
+                        // show how this hop is reached from the previous method
+                        const k = edgeKind(path[depth - 1], m);
+                        if (k === 2) hop.appendChild(el('span', 'kind', 'may call'));
+                        if (k === 1) hop.appendChild(el('span', 'kind', 'lambda'));
+                    }
+                    card.appendChild(hop);
                 });
-            }
-            panel.replaceChildren(...parts);
+                card.addEventListener('click', () => {
+                    wrap.querySelectorAll('.trace.active').forEach(t => t.classList.remove('active'));
+                    card.classList.add('active');
+                    emphasiseTrace(path);
+                });
+                wrap.appendChild(card);
+            });
+            if (paths.length > MAX_TRACES) wrap.appendChild(el('div', 'empty', `+ ${paths.length - MAX_TRACES} more entry points`));
+            return wrap;
+        }
+
+        function edgeKind(caller, callee) {
+            for (let e = G.revOffsets[callee]; e < G.revOffsets[callee + 1]; e++) if (G.revSources[e] === caller) return G.revKinds[e];
+            return 0;
+        }
+
+        function stackText(title, paths) {
+            const lines = [title];
+            paths.forEach((path, i) => {
+                lines.push('', `Route ${i + 1} · ${ENTRY_LABELS[entryKind(path[0])]}`);
+                path.forEach((m, depth) => lines.push(`${'  '.repeat(depth)}${depth ? '↳ ' : ''}${qualifiedLabel(m)}  [${classFqn(classOf(m))}]`));
+            });
+            return lines.join('\n');
+        }
+
+        function edgeLegend() {
+            const grid = el('div', 'legend-grid');
+            [['Direct call', EDGE.direct, 'solid'], ['Lambda / method ref', EDGE.lambda, 'dashed'],
+                ['May call (dispatch)', EDGE.dispatch, 'dotted'], ['Implements / overrides', EDGE.hier, 'solid']].forEach(([text, color, style]) => {
+                const s = el('span');
+                const stroke = el('i', 'stroke');
+                stroke.style.borderTopColor = color;
+                stroke.style.borderTopStyle = style;
+                s.append(stroke, document.createTextNode(text));
+                grid.appendChild(s);
+            });
+            return grid;
+        }
+
+        function copyButton() {
+            const b = el('button', 'cta', '⧉  Copy full execution stack');
+            b.type = 'button';
+            b.addEventListener('click', async () => {
+                try { await navigator.clipboard.writeText(copyText); }
+                catch (e) {
+                    const ta = el('textarea'); ta.value = copyText; document.body.appendChild(ta); ta.select();
+                    document.execCommand('copy'); ta.remove();
+                }
+                b.textContent = '✔  Copied'; b.classList.add('done');
+                setTimeout(() => { b.textContent = '⧉  Copy full execution stack'; b.classList.remove('done'); }, 1500);
+            });
+            return b;
+        }
+
+        function upstreamDetails(ids) {
+            const d = el('details');
+            d.appendChild(el('summary', null, `All upstream callers (${fmt(ids.length)})`));
+            ids.slice(0, 300).forEach(m => {
+                const h = el('div', 'hop', qualifiedLabel(m));
+                h.addEventListener('click', () => selectMethods([m]));
+                d.appendChild(h);
+            });
+            return d;
         }
 
         /**
          * Abstract / interface methods are expanded to their implementations; callers are traced
-         * from the implementations (that is where the call edges point). One hierarchy hop up is
-         * drawn for context.
+         * from the implementations (that is where the call edges point).
          */
         async function selectMethods(targets, classId) {
+            closeResults();
             lastSelection = [targets, classId];
             const impls = [];
             const seen = new Set(targets);
@@ -616,130 +943,315 @@
             roots.forEach(m => declarationsOf(m).forEach(d => { if (methodShown(d)) drawn.add(d); }));
             const drawnIds = [...drawn];
 
-            await present(drawnIds, targets);
-            await ensureSignatures([...drawnIds.slice(0, 400), ...impls]);
+            await present(drawnIds, targets, slice.ids); // hierarchy context is drawn, but not zoomed to
+            await ensureSignatures([...drawnIds.slice(0, 600), ...impls]);
             if (classId !== undefined) cy.getElementById('c' + classId).addClass('focus');
+
+            const rootSet = new Set(roots);
+            const paths = traces(slice);
+            const upstream = slice.ids.filter(m => !rootSet.has(m));
+            const c = classId !== undefined ? classId : classOf(targets[0]);
             const m = targets[0];
-            showSelection({
-                title: classId !== undefined ? G.classNames[classId] : methodLabel(m),
-                subtitle: classFqn(classId !== undefined ? classId : classOf(m)),
-                isEntryPoint: classId === undefined && isEntry(m),
-                classId, targets, impls, slice
-            });
+            const s = stereo(c);
+
+            const nodes = [drawerHead(`${stereotypeOf(c) === 'other' ? 'Class' : s.label} focus`, s.color, `${fmt(upstream.length)} callers · ${paths.length} entry points`)];
+            if (slice.truncated) nodes.push(el('div', 'note', `Large caller tree: showing the nearest ${fmt(SLICE_LIMIT)} methods.`));
+
+            const target = el('div', 'target');
+            target.append(el('div', 'sig', classId !== undefined ? G.classNames[c] : qualifiedLabel(m)), el('div', 'fqn', classFqn(c)));
+            nodes.push(block(classId !== undefined ? 'Target class' : 'Target method', null, target));
+
+            const grid = el('div', 'grid2');
+            const state = beanState(c);
+            grid.append(
+                stat('Bean state', state === 'active' ? 'Active' : state === 'inactive' ? 'Switched off' : 'Conditional',
+                    state === 'active' ? '#34d399' : state === 'inactive' ? '#94a3b8' : '#fbbf24'),
+                stat('Type', classKind(c) + (classId === undefined && isAbstract(m) ? ' · abstract' : '')),
+                stat('Entry point', classId === undefined && isEntry(m) ? ENTRY_LABELS[entryKind(m)] : '—', classId === undefined && isEntry(m) ? '#fb7185' : null),
+                stat('Profile', G.manifest.profiles.join(', '), '#67e8f9'));
+            nodes.push(block('Spring diagnostics', null, grid));
+
+            nodes.push(block('Upstream trace trees', `${paths.length} active root${paths.length === 1 ? '' : 's'}`,
+                paths.length ? traceCards(paths, rootSet)
+                    : el('div', 'empty', 'No entry point reaches this. It may be unused, or called via reflection, events, or a JDK/library interface (Runnable, Function…) Marga does not follow.')));
+
+            // polymorphism: implementations of an abstract target, or what a concrete target implements
+            const decls = classId === undefined ? declarationsOf(m) : [];
+            if (impls.length || decls.length || targets.some(isAbstract)) {
+                const list = el('div', 'list');
+                impls.forEach(i => list.appendChild(polyRow(i, 'implementation')));
+                decls.forEach(d => list.appendChild(polyRow(d, 'implements')));
+                if (!impls.length && targets.some(isAbstract)) {
+                    list.appendChild(el('div', 'empty', showInactive ? 'No implementation in the scanned code (e.g. a Spring Data proxy).'
+                        : 'No active implementation. Turn on "Show beans switched off by the profile".'));
+                }
+                nodes.push(block('Polymorphism & implementations', null, list));
+            }
+            if (upstream.length) nodes.push(block('Callers', null, upstreamDetails(upstream)));
+            nodes.push(block('Edge call semantics', null, edgeLegend()));
+
+            copyText = stackText(classId !== undefined ? classFqn(c) : `${qualifiedLabel(m)}  [${classFqn(c)}]`, paths);
+            openDrawer(nodes, [copyButton()]);
+        }
+
+        function polyRow(m, relation) {
+            const c = classOf(m);
+            const row = el('button', 'row');
+            row.type = 'button';
+            const dot = el('span', 'dot');
+            dot.style.background = beanState(c) === 'inactive' ? '#475569' : stereo(c).color;
+            dot.style.boxShadow = `0 0 8px ${dot.style.background}`;
+            const text = el('span');
+            text.style.minWidth = '0';
+            text.append(el('div', 'label', qualifiedLabel(m)), el('div', 'sub', relation === 'implements' ? 'implemented here' : classFqn(c)));
+            row.append(dot, text, stateTag(c));
+            row.addEventListener('click', () => selectMethods([m]));
+            return row;
         }
 
         const selectClass = c => selectMethods(classMethods(c), c);
 
-        function reset() {
-            searchBox.value = '';
+        /** Changed methods of the diff and everything that (transitively) calls them. */
+        async function showImpact() {
+            closeResults();
             lastSelection = null;
-            if (fullMode) {
-                cy.elements().removeClass('faded hl focus');
-                cy.animate({ fit: { padding: 30 }, duration: 300 });
-            } else {
-                cy.elements().remove();
-                showOverlay('Search for a class or method to see its callers.');
+            const changed = G.impact.changed.map(c => c.m).filter(methodShown);
+            const slice = callerSlice(changed, fullMode ? Infinity : SLICE_LIMIT);
+            if (slice.ids.length) await present(slice.ids, changed);
+            await ensureSignatures(slice.ids.slice(0, 800));
+            const changedSet = new Set(changed);
+            const paths = traces(slice);
+
+            const nodes = [drawerHead('Change impact', '#f59e0b', `vs ${G.impact.base}`)];
+            if (slice.truncated) nodes.push(el('div', 'note', `Large impact: showing the nearest ${fmt(SLICE_LIMIT)} methods (impact.md has the full list).`));
+            const grid = el('div', 'grid2');
+            grid.append(stat('Changed methods', fmt(changed.length), '#fbbf24'), stat('Impacted methods', fmt(slice.ids.length), '#67e8f9'),
+                stat('Entry points hit', fmt(paths.length), '#fb7185'), stat('Not mapped', fmt(G.impact.unmapped.length), '#94a3b8'));
+            nodes.push(block('Impact summary', null, grid));
+            nodes.push(block('Affected entry points', `${paths.length} route${paths.length === 1 ? '' : 's'}`,
+                paths.length ? traceCards(paths, changedSet) : el('div', 'empty', 'No entry point reaches the changed code.')));
+
+            const byMethod = new Map(G.impact.changed.map(c => [c.m, c]));
+            const list = el('div', 'list');
+            changed.forEach(m => {
+                const c = byMethod.get(m);
+                const row = el('button', 'row');
+                row.type = 'button';
+                const dot = el('span', 'dot');
+                dot.style.background = '#fbbf24';
+                const text = el('span');
+                text.style.minWidth = '0';
+                text.append(el('div', 'label', qualifiedLabel(m)),
+                    el('div', 'sub', c.lines.length ? `${c.file}:${c.lines.join(', ')}` : 'contains a changed anonymous class'));
+                row.append(dot, text);
+                row.addEventListener('click', () => selectMethods([m]));
+                list.appendChild(row);
+            });
+            nodes.push(block('Changed methods', null, list));
+
+            if (G.impact.unmapped.length) {
+                const um = el('div', 'list');
+                G.impact.unmapped.forEach(u => {
+                    const row = el('div', 'row');
+                    const text = el('span');
+                    text.style.minWidth = '0';
+                    text.append(el('div', 'label', `${u.file}${u.lines.length ? ':' + u.lines.join(', ') : ''}`), el('div', 'sub', u.reason));
+                    row.appendChild(text);
+                    um.appendChild(row);
+                });
+                nodes.push(block('Not mapped to a method', null, um));
             }
-            showIntro();
+            nodes.push(block('Edge call semantics', null, edgeLegend()));
+            copyText = stackText(`Change impact vs ${G.impact.base}`, paths);
+            openDrawer(nodes, [copyButton()]);
         }
 
-        // ---------------------------------------------------------------- search
-        async function runSearch(raw) {
-            const q = raw.trim().toLowerCase();
-            if (!q) return reset();
-            if (!G.classFqnLower) G.classFqnLower = G.classNames.map((_, c) => classFqn(c).toLowerCase());
+        function reset() {
+            closeResults();
+            lastSelection = null;
+            closeDrawer();
+            if (fullMode) {
+                cy.elements().removeClass('faded hl focus dim-trace');
+                fitVisible(cy.elements(), false, 40);
+            } else {
+                cy.elements().remove();
+                idleHint();
+            }
+        }
 
+        function idleHint() {
+            showHint('Trace any method to its entry points',
+                `${fmt(G.M)} methods are too many to draw at once. Press <span class="kbd">Ctrl K</span> and search for a class or method.`);
+        }
+
+        // ================================================================ search
+        let hits = [], active = -1, searchTimer;
+
+        function search(raw) {
+            const q = raw.trim().toLowerCase();
+            if (!q) return { classes: [], methods: [] };
+            if (!G.classFqnLower) G.classFqnLower = G.classNames.map((_, c) => classFqn(c).toLowerCase());
             const dot = q.lastIndexOf('.');
             const classQuery = dot > 0 ? q.slice(0, dot) : null;
             const methodQuery = dot > 0 ? q.slice(dot + 1) : q;
-
-            const classes = [];
-            if (!classQuery) {
-                for (let c = 0; c < G.C && classes.length < 50; c++) if (G.classFqnLower[c].includes(q)) classes.push(c);
-            }
-            // Class.method: an exact class name match wins over substring matches
             const exactClass = c => G.classNames[c].toLowerCase() === classQuery || G.classFqnLower[c] === classQuery;
             const hasExactClass = classQuery && G.classNames.some((_, c) => exactClass(c));
             const classMatches = c => !classQuery || (hasExactClass ? exactClass(c) : G.classFqnLower[c].includes(classQuery));
 
-            const methods = [];
-            for (let c = 0; c < G.C && methods.length < 200; c++) {
+            const classes = [];
+            if (!classQuery) for (let c = 0; c < G.C && classes.length < 12; c++) if (G.classFqnLower[c].includes(q)) classes.push(c);
+            let methods = [];
+            for (let c = 0; c < G.C && methods.length < 60; c++) {
                 if (!classMatches(c)) continue;
-                for (let m = G.classMethodOffsets[c]; m < G.classMethodOffsets[c + 1] && methods.length < 200; m++) {
+                for (let m = G.classMethodOffsets[c]; m < G.classMethodOffsets[c + 1] && methods.length < 60; m++) {
                     if (!methodQuery || G.namesLower[G.nameIdx[m]].includes(methodQuery)) methods.push(m);
                 }
             }
-            // an exact method name match wins too (save vs saveAll)
-            const exactMethods = methods.filter(m => G.namesLower[G.nameIdx[m]] === methodQuery);
-            if (classQuery && exactMethods.length) methods.splice(0, methods.length, ...exactMethods);
-
-            if (methods.length === 1 && classes.length === 0) return selectMethods(methods);
-            await ensureSignatures(methods);
-            const parts = [el('h2', null, `Results for "${raw.trim()}"`)];
-            if (!classes.length && !methods.length) parts.push(el('p', 'muted', 'No matches.'));
-            if (classes.length) {
-                parts.push(el('h3', null, `Classes (${classes.length}${classes.length === 50 ? '+' : ''})`));
-                parts.push(linkList(classes, selectClass, c => classFqn(c)));
-            }
-            if (methods.length) {
-                parts.push(el('h3', null, `Methods (${methods.length}${methods.length === 200 ? '+' : ''})`));
-                parts.push(linkList(methods, m => selectMethods([m]), withState));
-            }
-            panel.replaceChildren(...parts);
+            const exact = methods.filter(m => G.namesLower[G.nameIdx[m]] === methodQuery);
+            if (exact.length) methods = [...exact, ...methods.filter(m => !exact.includes(m))];
+            return { classes, methods };
         }
 
-        // ---------------------------------------------------------------- wiring
+        async function renderResults(raw) {
+            const { classes, methods } = search(raw);
+            await ensureSignatures(methods);
+            hits = [...classes.map(c => ({ c })), ...methods.map(m => ({ m }))];
+            active = hits.length ? 0 : -1;
+            results.replaceChildren();
+            if (!raw.trim()) { closeResults(); return; }
+            if (!hits.length) results.appendChild(el('div', 'empty', 'No matches'));
+            const head = (text) => { const h = el('div', 'results-head'); h.appendChild(el('div', 'eyebrow', text)); results.appendChild(h); };
+            if (classes.length) head('Classes');
+            hits.forEach((h, i) => {
+                if (i === classes.length && methods.length) head('Methods');
+                const b = el('button', 'result' + (i === active ? ' active' : ''));
+                b.type = 'button';
+                if (h.c !== undefined) {
+                    b.append(el('span', 'tag', classKind(h.c).split(' ')[0]), el('span', 'name', G.classNames[h.c]), el('span', 'where', G.packages[packageOf(h.c)]));
+                } else {
+                    const c = classOf(h.m);
+                    const state = beanState(c);
+                    b.append(el('span', 'tag', isEntry(h.m) ? 'entry' : isAbstract(h.m) ? 'abstract' : 'method'),
+                        el('span', 'name', qualifiedLabel(h.m) + (state === 'active' ? '' : ` · ${state}`)), el('span', 'where', classFqn(c)));
+                }
+                b.addEventListener('mouseenter', () => setActive(i));
+                b.addEventListener('click', () => choose(i));
+                results.appendChild(b);
+            });
+            results.classList.add('open');
+        }
+
+        function setActive(i) {
+            active = i;
+            results.querySelectorAll('.result').forEach((b, j) => b.classList.toggle('active', j === i));
+            const current = results.querySelectorAll('.result')[i];
+            if (current) current.scrollIntoView({ block: 'nearest' });
+        }
+        function choose(i) {
+            const h = hits[i];
+            if (!h) return;
+            searchBox.blur();
+            if (h.c !== undefined) selectClass(h.c); else selectMethods([h.m]);
+        }
+        function closeResults() { results.classList.remove('open'); }
+
+        searchBox.addEventListener('input', () => {
+            clearTimeout(searchTimer);
+            searchTimer = setTimeout(() => renderResults(searchBox.value), 120);
+        });
+        searchBox.addEventListener('focus', () => { if (searchBox.value.trim()) renderResults(searchBox.value); });
+        searchBox.addEventListener('keydown', evt => {
+            if (evt.key === 'ArrowDown') { evt.preventDefault(); if (hits.length) setActive((active + 1) % hits.length); }
+            if (evt.key === 'ArrowUp') { evt.preventDefault(); if (hits.length) setActive((active - 1 + hits.length) % hits.length); }
+            if (evt.key === 'Enter') { evt.preventDefault(); clearTimeout(searchTimer); if (!results.classList.contains('open')) renderResults(searchBox.value).then(() => choose(active)); else choose(active); }
+            if (evt.key === 'Escape') { closeResults(); searchBox.blur(); }
+        });
+        document.addEventListener('keydown', evt => {
+            if ((evt.key === 'k' || evt.key === 'K') && (evt.metaKey || evt.ctrlKey)) { evt.preventDefault(); searchBox.focus(); searchBox.select(); }
+            else if (evt.key === '/' && document.activeElement !== searchBox) { evt.preventDefault(); searchBox.focus(); }
+            else if (evt.key === 'Escape' && document.activeElement !== searchBox) reset();
+        });
+        document.addEventListener('click', evt => { if (!$('searchbox').contains(evt.target)) closeResults(); });
+        if (/Mac|iPhone|iPad/.test(navigator.platform)) $('kbd-hint').textContent = '⌘K';
+
+        // ================================================================ wiring
         cy.on('tap', evt => {
             const t = evt.target;
-            if (t === cy) { if (fullMode) reset(); return; }
+            closeResults();
+            if (t === cy) { if (fullMode && lastSelection) reset(); return; }
             if (!t.isNode()) return;
             if (t.data('type') === 'method') selectMethods([t.data('mid')]);
             else selectClass(t.data('cls'));
         });
-        searchBox.addEventListener('keydown', evt => {
-            if (evt.key === 'Enter') runSearch(searchBox.value);
-            if (evt.key === 'Escape') reset();
+
+        $('show-inactive').addEventListener('change', async evt => {
+            showInactive = evt.target.checked;
+            if (fullMode) {
+                showHint('Laying out…', '');
+                await draw(visibleMethods());
+                hideHint();
+            }
+            if (lastSelection) selectMethods(...lastSelection);
+            else if (G.impact && drawer.classList.contains('open')) showImpact();
         });
-        document.addEventListener('keydown', evt => {
-            if (evt.key === 'Escape' && document.activeElement !== searchBox) reset();
-        });
-        $('reset').addEventListener('click', reset);
-        $('impact-btn').addEventListener('click', () => showImpact());
+        const visibleMethods = () => { const ids = []; for (let m = 0; m < G.M; m++) if (methodShown(m)) ids.push(m); return ids; };
+
+        function renderChrome() {
+            const s = G.manifest.stats;
+            const pills = $('pills');
+            const pill = (cls, text) => { const p = el('span', 'pill ' + cls, text); pills.appendChild(p); return p; };
+            pill('blue', `${fmt(s.classes)} Classes`);
+            pill('emerald', `${fmt(s.methods)} Methods`);
+            pill('purple', `${fmt(s.edges)} Calls`);
+            pill('cyan', `${fmt(G.entryCount)} Entry points`);
+            if (G.impact) {
+                const p = pill('amber', `${fmt(G.impact.changed.length)} Changed`);
+                p.title = 'Show change impact';
+                p.addEventListener('click', showImpact);
+            }
+            const when = new Date(G.manifest.generatedAt);
+            $('runmeta').textContent = `profile ${G.manifest.profiles.join(', ')} · ${isNaN(when) ? '' : when.toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}`;
+            document.title = `Marga — ${fmt(s.classes)} classes · profile ${G.manifest.profiles.join(', ')}`;
+
+            const legend = $('legend');
+            Object.values(STEREOTYPES).forEach(st => {
+                const i = el('i'); i.style.background = st.color; i.style.color = st.color;
+                const span = el('span'); span.append(i, document.createTextNode(st.label)); legend.appendChild(span);
+            });
+            const entry = el('i', 'diamond'); entry.style.background = '#f43f5e'; entry.style.color = '#f43f5e';
+            const es = el('span'); es.append(entry, document.createTextNode('Entry point')); legend.appendChild(es);
+            if (G.impact) {
+                const ring = el('i', 'ring');
+                const rs = el('span'); rs.append(ring, document.createTextNode('Changed')); legend.appendChild(rs);
+            }
+        }
 
         async function start() {
             try {
                 const manifest = await Marga.load('manifest');
                 if (manifest.formatVersion !== FORMAT_VERSION) {
-                    throw new Error(`Report data format ${manifest.formatVersion} does not match viewer format ${FORMAT_VERSION}. Re-run the plugin.`);
+                    throw new Error(`report data format ${manifest.formatVersion} does not match viewer format ${FORMAT_VERSION}; re-run the plugin`);
                 }
-                const s = manifest.stats;
-                document.title = `Marga — profile: ${manifest.profiles.join(', ')}`;
-                $('stats').textContent =
-                    `${s.classes.toLocaleString()} classes · ${s.methods.toLocaleString()} methods · ${s.edges.toLocaleString()} calls · profile: ${manifest.profiles.join(', ')}`;
-                showOverlay('Loading call graph…');
-                const [core, search] = await Promise.all([Marga.load('core'), Marga.load('search')]);
-                initModel(manifest, core, search);
+                const [core, searchData] = await Promise.all([Marga.load('core'), Marga.load('search')]);
+                initModel(manifest, core, searchData);
                 if (manifest.impact) {
                     G.impact = await Marga.load('impact');
                     G.impact.changedSet = new Set(G.impact.changed.map(c => c.m));
-                    $('impact-btn').hidden = false;
                 }
+                renderChrome();
                 searchBox.disabled = false;
-
                 fullMode = G.M <= FULL_RENDER_LIMIT;
-                showIntro();
                 if (fullMode) {
-                    showOverlay(`Laying out ${G.M.toLocaleString()} methods…`);
-                    const all = visibleMethods();
+                    showHint(`Laying out ${fmt(G.M)} methods…`, '');
                     await new Promise(r => setTimeout(r, 30)); // let the message paint
-                    await draw(all);
-                    hideOverlay();
+                    await draw(visibleMethods());
+                    hideHint();
                 } else {
-                    showOverlay('Search for a class or method to see its callers.');
+                    idleHint();
                 }
                 if (G.impact) await showImpact(); // a diff was analyzed: open on its impact
             } catch (err) {
-                showOverlay(`Could not load the report: ${err.message}. Keep index.html next to its data/ folder.`);
+                showHint('Could not load the report', `${err.message}.<br>Keep index.html next to its data/ folder.`);
                 console.error(err);
             }
         }

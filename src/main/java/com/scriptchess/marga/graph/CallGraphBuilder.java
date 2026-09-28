@@ -28,15 +28,17 @@ public final class CallGraphBuilder {
     private static final String STEREO = "Lorg/springframework/stereotype/";
     private static final String CONTEXT = "Lorg/springframework/context/annotation/";
 
-    private static final Set<String> ENTRY_POINT_ANNOTATIONS = Set.of(
-            SPRING_WEB + "RequestMapping;", SPRING_WEB + "GetMapping;", SPRING_WEB + "PostMapping;",
-            SPRING_WEB + "PutMapping;", SPRING_WEB + "DeleteMapping;", SPRING_WEB + "PatchMapping;",
-            "Lorg/springframework/scheduling/annotation/Scheduled;",
-            "Lorg/springframework/context/event/EventListener;",
-            "Lorg/springframework/kafka/annotation/KafkaListener;",
-            "Lorg/springframework/amqp/rabbit/annotation/RabbitListener;",
-            "Lorg/springframework/jms/annotation/JmsListener;",
-            "Lio/awspring/cloud/sqs/annotation/SqsListener;");
+    /** Entry-point annotation -> kind index in {@link CallGraph#ENTRY_KINDS}. */
+    private static final Map<String, Integer> ENTRY_POINT_ANNOTATIONS = Map.ofEntries(
+            Map.entry(SPRING_WEB + "RequestMapping;", 1), Map.entry(SPRING_WEB + "GetMapping;", 1),
+            Map.entry(SPRING_WEB + "PostMapping;", 1), Map.entry(SPRING_WEB + "PutMapping;", 1),
+            Map.entry(SPRING_WEB + "DeleteMapping;", 1), Map.entry(SPRING_WEB + "PatchMapping;", 1),
+            Map.entry("Lorg/springframework/scheduling/annotation/Scheduled;", 2),
+            Map.entry("Lorg/springframework/context/event/EventListener;", 3),
+            Map.entry("Lorg/springframework/kafka/annotation/KafkaListener;", 4),
+            Map.entry("Lorg/springframework/amqp/rabbit/annotation/RabbitListener;", 5),
+            Map.entry("Lorg/springframework/jms/annotation/JmsListener;", 6),
+            Map.entry("Lio/awspring/cloud/sqs/annotation/SqsListener;", 7));
 
     private static final Set<String> CONTROLLER = Set.of(SPRING_WEB + "RestController;", STEREO + "Controller;");
     private static final Set<String> SERVICE = Set.of(STEREO + "Service;");
@@ -546,8 +548,12 @@ public final class CallGraphBuilder {
 
     private static byte methodFlags(ScannedMethod m) {
         int flags = 0;
-        if (m.annotations().stream().anyMatch(ENTRY_POINT_ANNOTATIONS::contains)) {
-            flags |= M_ENTRY;
+        for (String annotation : m.annotations()) {
+            Integer entryKind = ENTRY_POINT_ANNOTATIONS.get(annotation);
+            if (entryKind != null) {
+                flags |= M_ENTRY | (entryKind << M_ENTRY_KIND_SHIFT);
+                break;
+            }
         }
         if ("<init>".equals(m.name())) {
             flags |= M_CONSTRUCTOR;

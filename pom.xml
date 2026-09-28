@@ -4,41 +4,56 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
+  <!-- Needs the verified namespace com.scriptchess.
+       If you publish before it verifies, use com.scriptchess.marga instead (that namespace is verified). -->
   <groupId>com.scriptchess</groupId>
   <artifactId>marga-maven-plugin</artifactId>
-  <version>0.1.0-SNAPSHOT</version>
+  <version>1.0.0</version>
   <packaging>maven-plugin</packaging>
 
   <name>Marga Maven Plugin</name>
-  <description>Scans compiled Spring Boot code and generates an interactive method call graph (marga = path).</description>
-  <url>https://github.com/YOUR_GITHUB/marga</url>
+  <description>Scans compiled Spring Boot code and generates an interactive method call graph with change-impact analysis (marga = path).</description>
+  <url>https://github.com/${github.owner}/marga</url>
+  <inceptionYear>2026</inceptionYear>
 
-  <!-- Required by Maven Central -->
+  <!-- ===== Metadata required by Maven Central ===== -->
   <licenses>
     <license>
       <name>Apache License, Version 2.0</name>
       <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
     </license>
   </licenses>
   <developers>
     <developer>
+      <id>kumar-gaurav</id>
       <name>Kumar Gaurav</name>
       <organization>ScriptChess</organization>
       <organizationUrl>https://scriptchess.com</organizationUrl>
     </developer>
   </developers>
   <scm>
-    <url>https://github.com/YOUR_GITHUB/marga</url>
-    <connection>scm:git:https://github.com/YOUR_GITHUB/marga.git</connection>
+    <url>https://github.com/${github.owner}/marga</url>
+    <connection>scm:git:https://github.com/${github.owner}/marga.git</connection>
+    <developerConnection>scm:git:ssh://git@github.com/${github.owner}/marga.git</developerConnection>
+    <tag>v${project.version}</tag>
   </scm>
+  <issueManagement>
+    <system>GitHub</system>
+    <url>https://github.com/${github.owner}/marga/issues</url>
+  </issueManagement>
 
   <prerequisites>
     <maven>3.9.0</maven>
   </prerequisites>
 
   <properties>
+    <!-- CHANGE THIS: your GitHub user or organization (used in url, scm, issueManagement) -->
+    <github.owner>YOUR_GITHUB</github.owner>
+
     <maven.compiler.release>17</maven.compiler.release>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
     <maven.version>3.9.16</maven.version>
     <plugin-tools.version>3.15.2</plugin-tools.version>
@@ -68,19 +83,15 @@
       <scope>provided</scope>
     </dependency>
 
-    <!-- Bytecode scanning -->
+    <!-- Bytecode scanning (the visitors only use ASM core; asm-tree is not needed) -->
     <dependency>
       <groupId>org.ow2.asm</groupId>
       <artifactId>asm</artifactId>
       <version>${asm.version}</version>
     </dependency>
-    <dependency>
-      <groupId>org.ow2.asm</groupId>
-      <artifactId>asm-tree</artifactId>
-      <version>${asm.version}</version>
-    </dependency>
 
-    <!-- Graph JSON embedded into the HTML report -->
+    <!-- Only used by the optional scan.json debug output. The report itself has no Jackson
+         dependency: remove this if MargaMojo no longer writes scan.json. -->
     <dependency>
       <groupId>tools.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
@@ -100,10 +111,80 @@
         <artifactId>maven-plugin-plugin</artifactId>
         <version>${plugin-tools.version}</version>
         <configuration>
-          <!-- enables: mvn marga:graph -->
+          <!-- enables: mvn marga:graph (with <pluginGroup>com.scriptchess</pluginGroup> in settings.xml) -->
           <goalPrefix>marga</goalPrefix>
         </configuration>
       </plugin>
     </plugins>
   </build>
+
+  <profiles>
+    <!-- mvn -Prelease clean deploy : sources + javadoc + GPG signatures, then upload to the Central Portal -->
+    <profile>
+      <id>release</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-source-plugin</artifactId>
+            <version>3.3.1</version>
+            <executions>
+              <execution>
+                <id>attach-sources</id>
+                <goals>
+                  <goal>jar-no-fork</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <version>3.11.2</version>
+            <configuration>
+              <doclint>none</doclint>   <!-- missing Javadoc tags must not fail the release -->
+              <quiet>true</quiet>
+            </configuration>
+            <executions>
+              <execution>
+                <id>attach-javadocs</id>
+                <goals>
+                  <goal>jar</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-gpg-plugin</artifactId>
+            <version>3.2.7</version>
+            <!-- Locally gpg-agent asks for the passphrase; in CI it is read from MAVEN_GPG_PASSPHRASE -->
+            <executions>
+              <execution>
+                <id>sign-artifacts</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>sign</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.sonatype.central</groupId>
+            <artifactId>central-publishing-maven-plugin</artifactId>
+            <version>0.11.0</version>
+            <extensions>true</extensions>
+            <configuration>
+              <!-- must match the <server><id> in settings.xml -->
+              <publishingServerId>central</publishingServerId>
+              <deploymentName>marga-maven-plugin ${project.version}</deploymentName>
+              <!-- First release: upload + validate only, then press "Publish" in the Portal.
+                   Switch to true (and add <waitUntil>published</waitUntil>) for CI releases. -->
+              <autoPublish>false</autoPublish>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 </project>
