@@ -8,7 +8,7 @@
        If you publish before it verifies, use com.scriptchess.marga instead (that namespace is verified). -->
   <groupId>com.scriptchess</groupId>
   <artifactId>marga-maven-plugin</artifactId>
-  <version>1.0.3-SNAPSHOT</version>
+  <version>1.1.0</version>
   <packaging>maven-plugin</packaging>
 
   <name>Marga Maven Plugin</name>
