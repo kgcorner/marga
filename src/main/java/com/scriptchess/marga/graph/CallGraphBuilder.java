@@ -192,6 +192,19 @@ public final class CallGraphBuilder {
             collectLines(methods.get(m), index, lines, new HashSet<>());
             methodLines[m] = lines.stream().mapToInt(Integer::intValue).toArray();
         }
+        boolean[] configMethods = new boolean[methodCount];
+        for (int m = 0; m < methodCount; m++) {
+            ScannedClass owner = classes.get(methodClass.get(m));
+            configMethods[m] = methods.get(m).annotations().contains(BEAN)
+                    || hasAnnotation(owner.annotations(), Set.of(CONTEXT + "Configuration;"), index, new HashSet<>());
+        }
+        String[] entryRoutes = new String[methodCount];
+        for (int m = 0; m < methodCount; m++) {
+            if ((methodFlags[m] & M_ENTRY) != 0) {
+                entryRoutes[m] = EntryRoutes.describe(classes.get(methodClass.get(m)), methods.get(m),
+                        (methodFlags[m] >> M_ENTRY_KIND_SHIFT) & 7);
+            }
+        }
 
         // ---- 6. class-level edges for the overview
         Map<Long, Integer> classEdges = new LinkedHashMap<>();
@@ -224,7 +237,8 @@ public final class CallGraphBuilder {
                 rev.offsets(), rev.targets(), rev.kinds(),
                 ovr.offsets(), ovr.targets(), impl.offsets(), impl.targets(),
                 classEdgePairs, classEdgeWeights,
-                classSourcePaths, classOuterMethod, methodLines);
+                classSourcePaths, classOuterMethod, methodLines, entryRoutes,
+                configMethods);
     }
 
     /** Own lines plus the lines of lambda bodies (synthetic methods) it creates, recursively. */

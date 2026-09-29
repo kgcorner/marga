@@ -16,6 +16,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Maps changed source lines onto methods, then walks callers to find the impact radius.
@@ -38,6 +40,8 @@ import java.util.TreeSet;
 public final class ImpactAnalyzer {
 
     static final int MAX_HEADER_LINES = 20;
+    private static final java.util.regex.Pattern BLOCK_OPENER =
+            java.util.regex.Pattern.compile("^(}\\s*)?(try|else|finally|do|catch\\b.*|else if\\b.*|try\\s*\\(.*)\\s*\\{$");
 
     /** Analyzes without source text (less precise: comments and imports cannot be told apart). */
     public Impact analyze(CallGraph graph, Map<String, TreeSet<Integer>> changedLines, String base) {
@@ -83,8 +87,13 @@ public final class ImpactAnalyzer {
                     missed.add(line);
                 }
                 for (int m : hits) {
-                    changed.computeIfAbsent(m, k -> new Impact.ChangedMethod(k, path, new ArrayList<>()))
+                    changed.computeIfAbsent(m, k -> new Impact.ChangedMethod(k, path, new ArrayList<>(), 0, false))
                             .lines().add(line);
+                }
+            }
+            for (Map.Entry<Integer, Impact.ChangedMethod> c : changed.entrySet()) {
+                if (c.getValue().file().equals(path) && index.isAdded(graph, c.getKey(), file.getValue())) {
+                    c.setValue(c.getValue().withAdded(true));
                 }
             }
             if (!missed.isEmpty()) {
@@ -99,31 +108,119 @@ public final class ImpactAnalyzer {
             int m = pending.pop();
             int outer = graph.classOuterMethod()[classOf(graph, m)];
             if (outer >= 0 && !changed.containsKey(outer)) {
-                changed.put(outer, new Impact.ChangedMethod(outer, changed.get(m).file(), new ArrayList<>()));
+                changed.put(outer, new Impact.ChangedMethod(outer, changed.get(m).file(), new ArrayList<>(), 0, false));
                 pending.push(outer);
             }
         }
+        return fromChangedMethods(graph, new ArrayList<>(changed.values()), unmapped, base);
+    }
 
-        // impact radius: every transitive caller of a changed method
-        BitSet impacted = new BitSet(graph.methodCount());
-        Deque<Integer> queue = new ArrayDeque<>(changed.keySet());
-        changed.keySet().forEach(impacted::set);
+    /** Most changes whose individual reach is computed (one caller walk each). */
+    static final int MAX_RANKED_CHANGES = 400;
+
+    /**
+     * Impact radius of already-identified changed methods: every transitive caller, and for each
+     * affected entry point the nearest change, hop count and whether the path is certain.
+     */
+    public Impact fromChangedMethods(CallGraph graph, List<Impact.ChangedMethod> changed,
+                                     List<Impact.Unmapped> unmapped, String base) {
+        int n = graph.methodCount();
+        int[] nearest = new int[n];
+        int[] hops = new int[n];
+        java.util.Arrays.fill(nearest, -1);
+        Deque<Integer> queue = new ArrayDeque<>();
+        for (Impact.ChangedMethod c : changed) {
+            if (nearest[c.method()] < 0) {
+                nearest[c.method()] = c.method();
+                queue.add(c.method());
+            }
+        }
+        // multi-source walk over callers: nearest change and distance for every impacted method
         while (!queue.isEmpty()) {
             int m = queue.poll();
             for (int e = graph.revOffsets()[m]; e < graph.revOffsets()[m + 1]; e++) {
                 int caller = graph.revSources()[e];
-                if (!impacted.get(caller)) {
-                    impacted.set(caller);
+                if (nearest[caller] < 0) {
+                    nearest[caller] = nearest[m];
+                    hops[caller] = hops[m] + 1;
                     queue.add(caller);
                 }
             }
         }
-        int[] impactedIds = impacted.stream().toArray();
-        int[] entryPoints = impacted.stream()
-                .filter(m -> (graph.methodFlags()[m] & CallGraph.M_ENTRY) != 0)
-                .toArray();
+        // same walk, but only over edges that certainly run (no "may call" dispatch); an entry point
+        // reached this way is explained by its nearest *certain* change rather than a "may call" one
+        BitSet certain = new BitSet(n);
+        int[] certainNearest = new int[n];
+        int[] certainHops = new int[n];
+        for (Impact.ChangedMethod c : changed) {
+            if (!certain.get(c.method())) {
+                certain.set(c.method());
+                certainNearest[c.method()] = c.method();
+                queue.add(c.method());
+            }
+        }
+        while (!queue.isEmpty()) {
+            int m = queue.poll();
+            for (int e = graph.revOffsets()[m]; e < graph.revOffsets()[m + 1]; e++) {
+                int caller = graph.revSources()[e];
+                if (graph.revKinds()[e] != CallGraph.EDGE_DISPATCH && !certain.get(caller)) {
+                    certain.set(caller);
+                    certainNearest[caller] = certainNearest[m];
+                    certainHops[caller] = certainHops[m] + 1;
+                    queue.add(caller);
+                }
+            }
+        }
 
-        return new Impact(base, List.copyOf(changed.values()), impactedIds, entryPoints, unmapped);
+        // per change: how many entry points it reaches (used to rank the riskiest changes)
+        boolean ranked = changed.size() <= MAX_RANKED_CHANGES;
+        Map<Integer, List<Integer>> changesPerEntry = new HashMap<>();
+        List<Impact.ChangedMethod> withReach = new ArrayList<>(changed.size());
+        for (Impact.ChangedMethod c : changed) {
+            if (!ranked) {
+                withReach.add(c.withReach(-1));
+                continue;
+            }
+            BitSet seen = new BitSet(n);
+            seen.set(c.method());
+            queue.add(c.method());
+            int reach = 0;
+            while (!queue.isEmpty()) {
+                int m = queue.poll();
+                if ((graph.methodFlags()[m] & CallGraph.M_ENTRY) != 0) {
+                    reach++;
+                    changesPerEntry.computeIfAbsent(m, k -> new ArrayList<>()).add(c.method());
+                }
+                for (int e = graph.revOffsets()[m]; e < graph.revOffsets()[m + 1]; e++) {
+                    int caller = graph.revSources()[e];
+                    if (!seen.get(caller)) {
+                        seen.set(caller);
+                        queue.add(caller);
+                    }
+                }
+            }
+            withReach.add(c.withReach(reach));
+        }
+
+        Set<Integer> changedIds = new HashSet<>();
+        changed.forEach(c -> changedIds.add(c.method()));
+        List<Integer> impacted = new ArrayList<>();
+        List<Impact.EntryImpact> entries = new ArrayList<>();
+        for (int m = 0; m < n; m++) {
+            if (nearest[m] < 0) {
+                continue;
+            }
+            impacted.add(m);
+            if ((graph.methodFlags()[m] & CallGraph.M_ENTRY) != 0) {
+                boolean sure = certain.get(m);
+                entries.add(new Impact.EntryImpact(m, changedIds.contains(m),
+                        sure ? certainNearest[m] : nearest[m], sure ? certainHops[m] : hops[m],
+                        sure, ranked ? changesPerEntry.getOrDefault(m, List.of()).size() : -1,
+                        List.copyOf(changesPerEntry.getOrDefault(m, List.of()))));
+            }
+        }
+        return new Impact(base, List.copyOf(withReach), impacted.stream().mapToInt(Integer::intValue).toArray(),
+                List.copyOf(entries), unmapped);
     }
 
     private static List<String> readSource(Path root, String path) {
@@ -182,10 +279,45 @@ public final class ImpactAnalyzer {
             }
         }
 
+        /**
+         * The whole method is new: every line with its bytecode was added, and so was its signature line.
+         * Checking the signature keeps a modified one-line method from counting as new.
+         */
+        boolean isAdded(CallGraph graph, int m, java.util.Set<Integer> changedLines) {
+            int[] code = graph.methodLines()[m];
+            if (code.length == 0) {
+                return false;
+            }
+            for (int line : code) {
+                if (!changedLines.contains(line)) {
+                    return false;
+                }
+            }
+            if (source == null) {
+                return changedLines.contains(code[0] - 1);
+            }
+            String name = (graph.methodFlags()[m] & CallGraph.M_CONSTRUCTOR) != 0
+                    ? simpleClassName(graph.classNames()[classOf(graph, m)])
+                    : graph.methodNames()[m];
+            for (int p = code[0]; p >= Math.max(1, code[0] - MAX_HEADER_LINES); p--) {
+                String t = text(p);
+                boolean statement = t == null || t.endsWith(";") || t.startsWith("return ");  // a call, not the declaration
+                if (!statement && t.matches(".*\\b" + java.util.regex.Pattern.quote(name) + "\\s*\\(.*")) {
+                    return changedLines.contains(p);
+                }
+            }
+            return false;
+        }
+
+        private static String simpleClassName(String name) {
+            return name.substring(name.lastIndexOf('$') + 1);
+        }
+
         boolean isNoise(int line) {
             String text = text(line);
             return text != null && (text.isEmpty() || text.startsWith("//") || text.startsWith("/*")
-                    || text.startsWith("*") || text.endsWith("*/") && !text.contains(";"));
+                    || text.startsWith("*") || text.endsWith("*/") && !text.contains(";")
+                    || text.matches("[{}]+"));   // lone braces: moving them cannot change behavior
         }
 
         List<Integer> hit(int line) {
@@ -194,23 +326,31 @@ public final class ImpactAnalyzer {
                 return exact;
             }
             String text = text(line);
+            if (source != null && text == null) {
+                return List.of(); // beyond the end of the file, e.g. the marker after a deletion at the end
+            }
+
             if (text != null && (text.startsWith("import ") || text.startsWith("package "))) {
                 return List.of();
-            }
-            if(text == null) {
-                return List.of();
-            }
-            if (looksLikeDeclaration(text)) {
-                List<Integer> declared = declarationOf(line);
-                if (!declared.isEmpty()) {
-                    return declared;
-                }
             }
             List<Integer> continued = continuation(line, text);
             if (continued != null) {
                 return continued;
             }
-
+            if (text != null && BLOCK_OPENER.matcher(text).matches()) {
+                // try {, else {, finally {, do {, } catch (...) { : no bytecode of their own,
+                // they belong to the method whose code follows
+                Map.Entry<Integer, List<Integer>> next = methodsByLine.higherEntry(line);
+                if (next != null && next.getKey() - line <= MAX_HEADER_LINES) {
+                    return next.getValue();
+                }
+            }
+            if (text == null || looksLikeDeclaration(text)) {
+                List<Integer> declared = declarationOf(line);
+                if (!declared.isEmpty()) {
+                    return declared;
+                }
+            }
             int[] innermost = null;
             for (int[] r : ranges) {
                 if (r[1] <= line && line <= r[2] && (innermost == null || r[2] - r[1] < innermost[2] - innermost[1])) {
@@ -222,7 +362,7 @@ public final class ImpactAnalyzer {
 
         /** L continues a statement when the previous meaningful source line is an unfinished statement. */
         private List<Integer> continuation(int line, String text) {
-            if (source == null || text.startsWith("@")) {
+            if (source == null || text == null || text.startsWith("@")) {
                 return null;
             }
             Map.Entry<Integer, List<Integer>> previousCode = methodsByLine.lowerEntry(line);

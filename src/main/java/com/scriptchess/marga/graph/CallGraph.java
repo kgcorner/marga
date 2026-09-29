@@ -15,6 +15,9 @@ package com.scriptchess.marga.graph;
  *  - classSourcePaths[c]  "com/acme/UserService.java", or null without debug info
  *  - classOuterMethod[c]  enclosing method id of a local/anonymous class, or -1
  *  - methodLines[m]       sorted source lines with bytecode, lambda bodies included
+ *  - configMethods[m]: a @Bean method, or any method of a @Configuration class (build-time only).
+ *  - entryRoutes[m]: for entry points, what triggers them, e.g. "GET /api/books/{id}",
+ *    "topics: orders", "cron: 0 0 * * * *"; null for other methods.
  */
 public record CallGraph(
         String[] activeProfiles,
@@ -42,7 +45,9 @@ public record CallGraph(
         int[] classEdgeWeights,
         String[] classSourcePaths,
         int[] classOuterMethod,
-        int[][] methodLines) {
+        int[][] methodLines,
+        String[] entryRoutes,
+        boolean[] configMethods) {
 
     // classFlags: bits 0-2 stereotype, bits 3-4 kind, bits 5-6 bean state
     public static final int STEREO_OTHER = 0;

@@ -204,10 +204,17 @@ Because Marga only needs compiled classes and an optional diff, it fits into any
 - run: mvn compile marga:graph -Dmarga.diffBase=origin/${{ github.base_ref }}
 - run: cat target/marga/impact.md >> $GITHUB_STEP_SUMMARY   # or post it as a PR comment
 ```
-
 Tip: to annotate a PR from a different job or workflow, create the diff once
 (`git diff origin/main > changes.patch`), pass it with `-Dmarga.diffFile=changes.patch`, and
 attach `impact.json` / `impact.md` as build artifacts.
+
+If you want to use base branch to calculate impact then include `fetch-depth: 0` in your CI checkout step so that the merge base can be computed correctly.
+
+```
+   - uses: actions/checkout@v4
+     with:
+       fetch-depth: 0
+```
 
 ### 5. Handy recipes
 
