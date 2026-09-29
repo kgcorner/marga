@@ -8,7 +8,9 @@ import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /** Collects class-level structure: hierarchy, annotations, @Profile values, source file and methods. */
 public final class MargaClassVisitor extends ClassVisitor {
@@ -17,6 +19,7 @@ public final class MargaClassVisitor extends ClassVisitor {
     private final List<String> annotations = new ArrayList<>();
     private final List<String> profiles = new ArrayList<>();
     private final List<ScannedMethod> methods = new ArrayList<>();
+    private final Map<String, Map<String, List<String>>> annotationValues = new LinkedHashMap<>();
 
     private String name;
     private String superName;
@@ -54,7 +57,12 @@ public final class MargaClassVisitor extends ClassVisitor {
     @Override
     public AnnotationVisitor visitAnnotation(String descriptor, boolean visible) {
         annotations.add(descriptor);
-        return ProfileValuesVisitor.PROFILE.equals(descriptor) ? new ProfileValuesVisitor(profiles) : null;
+        if (ProfileValuesVisitor.PROFILE.equals(descriptor)) {
+            return new ProfileValuesVisitor(profiles);
+        }
+        return AnnotationValuesVisitor.TRACKED.contains(descriptor)
+                ? new AnnotationValuesVisitor(annotationValues.computeIfAbsent(descriptor, k -> new LinkedHashMap<>()))
+                : null;
     }
 
     @Override
@@ -65,6 +73,6 @@ public final class MargaClassVisitor extends ClassVisitor {
 
     public ScannedClass result() {
         return new ScannedClass(name, superName, interfaces, access, module,
-                List.copyOf(annotations), List.copyOf(profiles), sourceFile, outerMethod, List.copyOf(methods));
+                List.copyOf(annotations), List.copyOf(profiles), sourceFile, outerMethod, annotationValues, List.copyOf(methods));
     }
 }
