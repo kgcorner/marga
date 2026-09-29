@@ -72,8 +72,6 @@
         .pill.cyan { color: #22d3ee; border-color: rgba(6, 182, 212, .35); background: rgba(6, 182, 212, .08); }
         .pill.amber { color: #fbbf24; border-color: rgba(245, 158, 11, .4); background: rgba(245, 158, 11, .1); cursor: pointer; }
         .pill.amber:hover { background: rgba(245, 158, 11, .2); }
-        .pill.amber svg { width: 14px; height: 14px; margin-left: 2px; }
-        .pill.amber:focus-visible { outline: 2px solid #fbbf24; outline-offset: 2px; }
         .runmeta { color: var(--muted); font-size: 12.5px; white-space: nowrap; padding-left: 12px; border-left: 1px solid var(--line); margin-left: auto; }
 
         /* ---------- search */
@@ -190,6 +188,100 @@
         #tip[hidden] { display: none; }
         #tip .where { color: var(--amber); font-size: 11px; }
 
+
+        /* ---------- left rail (only with a diff) */
+        #rail { position: fixed; z-index: 6; left: 20px; top: 98px; width: 56px; padding: 8px; display: none; flex-direction: column; gap: 6px; }
+        body.has-impact #rail { display: flex; }
+        #rail button { position: relative; width: 40px; height: 40px; border: 1px solid transparent; border-radius: 11px; background: transparent;
+            color: var(--muted); display: grid; place-items: center; }
+        #rail button:hover { color: var(--text); background: rgba(255,255,255,.05); }
+        #rail button.on { color: #67e8f9; background: rgba(6,182,212,.12); border-color: rgba(6,182,212,.5); box-shadow: 0 0 16px -6px rgba(6,182,212,.7); }
+        #rail button[data-view="impact"].on { color: #fbbf24; background: rgba(245,158,11,.12); border-color: rgba(245,158,11,.5); box-shadow: 0 0 16px -6px rgba(245,158,11,.7); }
+        #rail svg { width: 20px; height: 20px; }
+        #rail .count { position: absolute; top: -5px; right: -7px; min-width: 18px; height: 18px; padding: 0 4px; border-radius: 9px;
+            background: #f59e0b; color: #1c1102; font: 700 10px/18px var(--mono); }
+        #rail button::after { content: attr(data-tip); position: absolute; left: 50px; top: 50%; transform: translateY(-50%); white-space: nowrap;
+            padding: 5px 9px; border-radius: 7px; background: #0b1628; border: 1px solid var(--line-strong); color: var(--text); font: 12px var(--mono);
+            opacity: 0; pointer-events: none; transition: opacity .15s; }
+        #rail button:hover::after { opacity: 1; }
+        body.has-impact #lod { left: 90px; }
+
+        /* ---------- impact page */
+        #impact { position: fixed; z-index: 5; top: 98px; left: 90px; right: 20px; bottom: 20px; overflow: auto; display: none;
+            padding: 4px 4px 24px; }
+        body.view-impact #impact { display: block; }
+        body.view-impact #drawer, body.view-impact #lod, body.view-impact #hint { display: none; }
+        body.view-impact #stage { filter: blur(3px) brightness(.35); }
+        .imp-head { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-bottom: 14px; }
+        .crumb { font: 12.5px var(--mono); color: var(--muted); display: flex; gap: 10px; align-items: center; }
+        .crumb b { color: var(--text); font-weight: 600; }
+        .crumb .tagx { color: #67e8f9; border: 1px solid rgba(6,182,212,.35); background: rgba(6,182,212,.08); padding: 3px 8px; border-radius: 6px; }
+        .tabs { display: flex; gap: 6px; margin-left: auto; padding: 4px; border-radius: 12px; background: rgba(3,10,20,.7); border: 1px solid var(--line); }
+        .tabs button { border: 1px solid transparent; background: transparent; border-radius: 9px; padding: 8px 14px; font: 12.5px var(--mono); color: var(--muted); }
+        .tabs button.on { color: #c4b5fd; background: rgba(139,92,246,.16); border-color: rgba(139,92,246,.5); }
+        .kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin-bottom: 14px; }
+        .kpi { padding: 18px 20px; border-radius: 16px; min-width: 0; }
+        .kpi .big { font: 700 34px/1 var(--sans); margin: 14px 0 10px; display: flex; align-items: baseline; gap: 10px; }
+        .kpi .big small { font: 400 13px var(--sans); color: var(--muted); }
+        .kpi .foot2 { font: 12px var(--mono); color: #67e8f9; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .kpi.hot { background: linear-gradient(160deg, rgba(127,29,29,.75), rgba(69,10,10,.8)); box-shadow: 0 0 0 1px rgba(239,68,68,.35), 0 20px 45px -10px rgba(0,0,0,.75); cursor: pointer; }
+        .kpi.hot .eyebrow { color: #fca5a5; }
+        .kpi.hot .method { font: 700 17px/1.3 var(--mono); color: #fff; margin: 16px 0 8px; overflow-wrap: anywhere; }
+        .kpi.hot .foot2 { color: #fca5a5; }
+        .banner { display: flex; gap: 10px; align-items: flex-start; padding: 12px 16px; border-radius: 12px; margin-bottom: 14px; font: 12.5px/1.5 var(--mono);
+            color: #fde68a; background: rgba(245,158,11,.08); border: 1px solid rgba(245,158,11,.4); }
+        .imp-body { display: grid; grid-template-columns: minmax(0, 1fr) 470px; gap: 14px; }
+        .imp-body.single { grid-template-columns: minmax(0, 1fr); }
+        .graphbox { padding: 14px; border-radius: 16px; display: flex; flex-direction: column; min-height: 600px; }
+        .toolbar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 10px; }
+        .chipbtn { border: 1px solid var(--line-strong); background: rgba(3,10,20,.6); border-radius: 8px; padding: 6px 11px; font: 12px var(--mono); color: var(--muted); }
+        .chipbtn.on { color: var(--text); border-color: rgba(148,163,184,.6); background: rgba(148,163,184,.12); }
+        .chipbtn .d { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 6px; }
+        .toolbar .grow { flex: 1; }
+        .toolbar .origin { font: 12px var(--mono); color: #fecaca; background: rgba(127,29,29,.6); border: 1px solid rgba(239,68,68,.45); padding: 5px 10px; border-radius: 8px; }
+        #impact-cy { flex: 1; min-height: 520px; border-radius: 12px; background: radial-gradient(circle at 50% 45%, rgba(9,28,56,.55), rgba(3,10,20,.2) 70%); }
+        .detail { padding: 20px 22px; border-radius: 16px; min-width: 0; align-self: start; position: sticky; top: 0; max-height: calc(100vh - 140px); overflow: auto; }
+        .detail h3 { margin: 10px 0 4px; font: 700 20px var(--sans); overflow-wrap: anywhere; }
+        .detail .path { font: 12px var(--mono); color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .trio { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin: 16px 0 18px; padding: 12px 6px; border-radius: 12px; background: rgba(3,10,20,.6); border: 1px solid var(--line); text-align: center; }
+        .trio b { display: block; font: 700 22px var(--mono); }
+        .trio span { font: 10px var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+        .sigrow, .eprow { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 8px; font: 12.5px var(--mono); width: 100%;
+            border: 0; background: transparent; text-align: left; color: var(--text); }
+        .sigrow:nth-child(odd), .eprow:nth-child(odd) { background: rgba(255,255,255,.025); }
+        button.eprow:hover { background: rgba(56,189,248,.08); }
+        .sigrow .lbl, .eprow .lbl { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .sigrow .ln, .eprow .hops { color: var(--muted); white-space: nowrap; }
+        .verb { font-weight: 700; color: #22d3ee; margin-right: 6px; }
+        .verb.post { color: #34d399; } .verb.put, .verb.patch { color: #fbbf24; } .verb.delete { color: #fb7185; } .verb.other { color: #c084fc; }
+        .chain { font: 12px/1.6 var(--mono); color: #67e8f9; padding: 12px 14px; border-radius: 10px; background: rgba(3,10,20,.6); border: 1px solid var(--line); overflow-wrap: anywhere; }
+        .mini { font: 10.5px var(--mono); padding: 2px 7px; border-radius: 5px; border: 1px solid var(--line-strong); color: var(--muted); white-space: nowrap; }
+        .mini.new { color: #6ee7b7; border-color: rgba(16,185,129,.5); }
+        .mini.may { color: #fbbf24; border-color: rgba(245,158,11,.45); }
+        .mini.wide { color: #fca5a5; border-color: rgba(239,68,68,.5); background: rgba(127,29,29,.35); }
+        .mini.cfg { color: #fbbf24; border-color: rgba(245,158,11,.45); }
+        .qa { max-width: 1100px; }
+        .qa .card { padding: 18px 20px; border-radius: 16px; margin-bottom: 14px; }
+        .qa h2 { font: 700 15px var(--mono); margin: 0 0 6px; }
+        .qa .sub { color: var(--muted); font-size: 12.5px; margin-bottom: 12px; }
+        .qa h4 { font: 600 11px var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin: 16px 0 6px; }
+        .qa .clsname { font: 600 12.5px var(--mono); color: var(--text); margin: 10px 0 4px; }
+        .check { display: flex; align-items: center; gap: 10px; padding: 7px 10px; border-radius: 8px; font: 12.5px var(--mono); cursor: pointer; }
+        .check:hover { background: rgba(56,189,248,.06); }
+        .check input { accent-color: #10b981; width: 15px; height: 15px; flex-shrink: 0; }
+        .check.done .lbl { opacity: .45; text-decoration: line-through; }
+        .check .lbl { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .check .why { color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 45%; }
+        .callout { padding: 10px 14px; border-radius: 10px; border-left: 3px solid #22d3ee; background: rgba(6,182,212,.07); font: 12.5px/1.55 var(--mono); color: #cffafe; margin: 8px 0 12px; }
+        .qa details { margin-top: 10px; }
+        .qa details summary { color: var(--text); }
+        .ghostbtn { border: 1px solid var(--line-strong); background: rgba(3,10,20,.6); color: var(--text); border-radius: 9px; padding: 8px 12px; font: 12px var(--mono); }
+        .ghostbtn:hover { border-color: rgba(6,182,212,.6); }
+        .clscard { padding: 16px 18px; border-radius: 16px; margin-bottom: 12px; }
+        .clscard .top { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+        .clscard .top b { font: 700 14px var(--mono); }
+        .clscard .top .meta { margin-left: auto; font: 12px var(--mono); color: var(--muted); }
+        @media (max-width: 1400px) { .imp-body { grid-template-columns: minmax(0, 1fr); } .detail { position: static; max-height: none; } .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
         @media (max-width: 1500px) { .runmeta { display: none; } }
         @media (max-width: 1300px) {
             #topbar { right: 20px; }
@@ -241,6 +333,21 @@
     <div id="results" class="glass"></div>
 </div>
 
+
+<nav id="rail" class="glass" aria-label="Views">
+    <button type="button" data-view="explorer" data-tip="Explorer" class="on" aria-label="Explorer">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="5" cy="6" r="2.2"/><circle cx="19" cy="6" r="2.2"/><circle cx="12" cy="18" r="2.2"/><circle cx="12" cy="10" r="1.6"/>
+            <path d="M7 7l3.6 2.2M17 7l-3.6 2.2M12 11.7v4"/></svg>
+    </button>
+    <button type="button" data-view="impact" data-tip="Change impact" aria-label="Change impact">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.4" fill="currentColor"/></svg>
+        <span class="count" id="rail-count"></span>
+    </button>
+</nav>
+
+<main id="impact" aria-label="Change impact"></main>
 <aside id="drawer" class="glass" aria-label="Inspector">
     <div class="scroll" id="panel"></div>
     <div class="foot" id="panel-foot"></div>
@@ -329,6 +436,7 @@
                 ovrTargets: i32(core.ovrTargets),
                 implOffsets: i32(core.implOffsets),
                 implSources: i32(core.implSources),
+                entryRoutes: core.entryRoutes || {},
                 names: search.names,
                 nameIdx: i32(search.idx)
             });
@@ -829,14 +937,6 @@
         }
         function closeDrawer() { drawer.classList.remove('open'); }
 
-        /** "Back to change impact" shortcut shown above every non-impact view when a diff was analyzed. */
-        function impactBack() {
-            const b = el('button', 'back', `← Back to change impact · ${fmt(G.impact.changed.length)} changed methods`);
-            b.type = 'button';
-            b.addEventListener('click', () => showImpact());
-            return b;
-        }
-
         function drawerHead(chipText, chipColor, meta) {
             const head = el('div', 'drawer-head');
             const chip = el('span', 'chip', chipText);
@@ -967,6 +1067,7 @@
          */
         async function selectMethods(targets, classId) {
             closeResults();
+            setView('explorer');
             lastSelection = [targets, classId];
             setRoute(classId !== undefined ? `class=${classId}` : `method=${targets[0]}`);
             const impls = [];
@@ -991,7 +1092,7 @@
             const m = targets[0];
             const s = stereo(c);
 
-            const nodes = G.impact ? [impactBack()] : [];
+            const nodes = [];
             nodes.push(drawerHead(`${stereotypeOf(c) === 'other' ? 'Class' : s.label} focus`, s.color, `${fmt(upstream.length)} callers · ${paths.length} entry points`));
             if (slice.truncated) nodes.push(el('div', 'note', `Large caller tree: showing the nearest ${fmt(SLICE_LIMIT)} methods.`));
 
@@ -1049,63 +1150,620 @@
 
         const selectClass = c => selectMethods(classMethods(c), c);
 
-        /** Changed methods of the diff and everything that (transitively) calls them. */
-        async function showImpact(replaceRoute = false) {
-            closeResults();
-            lastSelection = null;
-            setRoute('impact', replaceRoute);
-            const changed = G.impact.changed.map(c => c.m).filter(methodShown);
-            const slice = callerSlice(changed, fullMode ? Infinity : SLICE_LIMIT);
-            if (slice.ids.length) await present(slice.ids, changed);
-            await ensureSignatures(slice.ids.slice(0, 800));
-            const changedSet = new Set(changed);
-            const paths = traces(slice);
+        // ================================================================ impact view
+        // Its own page, only when a diff was analyzed: KPI cards, a class-level graph
+        // (changed classes -> classes holding the affected entry points), a QA checklist and the changes.
+        let view = 'explorer';
+        const IMP = { built: false, tab: 'graph', focus: null, filter: 'all', cy: null, d: null, checked: new Set() };
 
-            const nodes = [drawerHead('Change impact', '#f59e0b', `vs ${G.impact.base}`)];
-            if (slice.truncated) nodes.push(el('div', 'note', `Large impact: showing the nearest ${fmt(SLICE_LIMIT)} methods (impact.md has the full list).`));
-            const grid = el('div', 'grid2');
-            grid.append(stat('Changed methods', fmt(changed.length), '#fbbf24'), stat('Impacted methods', fmt(slice.ids.length), '#67e8f9'),
-                stat('Entry points hit', fmt(paths.length), '#fb7185'), stat('Not mapped', fmt(G.impact.unmapped.length), '#94a3b8'));
-            nodes.push(block('Impact summary', null, grid));
-            nodes.push(block('Affected entry points', `${paths.length} route${paths.length === 1 ? '' : 's'}`,
-                paths.length ? traceCards(paths, changedSet) : el('div', 'empty', 'No entry point reaches the changed code.')));
-
-            const byMethod = new Map(G.impact.changed.map(c => [c.m, c]));
-            const list = el('div', 'list');
-            changed.forEach(m => {
-                const c = byMethod.get(m);
-                const row = el('button', 'row');
-                row.type = 'button';
-                const dot = el('span', 'dot');
-                dot.style.background = '#fbbf24';
-                const text = el('span');
-                text.style.minWidth = '0';
-                text.append(el('div', 'label', qualifiedLabel(m)),
-                    el('div', 'sub', c.lines.length ? `${c.file}:${c.lines.join(', ')}` : 'contains a changed anonymous class'));
-                row.append(dot, text);
-                row.addEventListener('click', () => selectMethods([m]));
-                list.appendChild(row);
-            });
-            nodes.push(block('Changed methods', null, list));
-
-            if (G.impact.unmapped.length) {
-                const um = el('div', 'list');
-                G.impact.unmapped.forEach(u => {
-                    const row = el('div', 'row');
-                    const text = el('span');
-                    text.style.minWidth = '0';
-                    text.append(el('div', 'label', `${u.file}${u.lines.length ? ':' + u.lines.join(', ') : ''}`), el('div', 'sub', u.reason));
-                    row.appendChild(text);
-                    um.appendChild(row);
-                });
-                nodes.push(block('Not mapped to a method', null, um));
+        function setView(v) {
+            if (!G.impact) v = 'explorer';
+            if (v === view) return;
+            view = v;
+            document.body.classList.toggle('view-impact', v === 'impact');
+            document.querySelectorAll('#rail button').forEach(b => b.classList.toggle('on', b.dataset.view === v));
+            if (v === 'impact') {
+                closeResults();
+                if (IMP.cy) requestAnimationFrame(() => { IMP.cy.resize(); });
             }
-            nodes.push(block('Edge call semantics', null, edgeLegend()));
-            copyText = stackText(`Change impact vs ${G.impact.base}`, paths);
-            openDrawer(nodes, [copyButton()]);
+        }
+        document.querySelectorAll('#rail button').forEach(b => b.addEventListener('click', () => {
+            if (b.dataset.view === 'impact') showImpact();
+            else { setView('explorer'); if (location.hash === '#impact') setRoute(''); }
+        }));
+
+        async function showImpact(replaceRoute = false) {
+            setRoute('impact', replaceRoute);
+            setView('impact');
+            if (!IMP.built) await buildImpact();
         }
 
+        // ---------- derived data
+        function deriveImpact() {
+            const I = G.impact;
+            const D = {};
+            D.changed = I.changed;
+            D.byId = new Map(I.changed.map(c => [c.m, c]));
+            D.entries = I.entries || [];
+            D.entries.forEach(e => { e.reachedList = e.reached && e.reached.length ? e.reached : [e.near]; });
+            D.direct = D.entries.filter(e => e.edited);
+            D.indirect = D.entries.filter(e => !e.edited);
+            D.newIds = new Set(I.changed.filter(c => c.added).map(c => c.m));
+            D.wideMin = Math.max(5, Math.ceil(D.entries.length * 0.3));
+            D.risk = reach => reach >= D.wideMin ? 'wide' : reach <= 1 ? 'narrow' : 'medium';
+
+            D.changedClasses = new Map();
+            I.changed.forEach(c => {
+                const k = classOf(c.m);
+                if (!D.changedClasses.has(k)) D.changedClasses.set(k, { cls: k, changes: [], entries: new Set() });
+                D.changedClasses.get(k).changes.push(c);
+            });
+            D.entries.forEach(e => e.reachedList.forEach(m => {
+                const info = D.changedClasses.get(classOf(m));
+                if (info) info.entries.add(e.m);
+            }));
+            D.changedClasses.forEach(info => {
+                info.reach = info.entries.size;
+                info.model = info.changes.every(c => c.model);
+                info.config = info.changes.some(c => c.config);
+            });
+            D.entryClasses = new Map();
+            D.entries.forEach(e => {
+                const k = classOf(e.m);
+                if (!D.entryClasses.has(k)) D.entryClasses.set(k, { cls: k, entries: [] });
+                D.entryClasses.get(k).entries.push(e);
+            });
+            D.widest = I.changed.filter(c => !c.model && c.reach > 0).sort((a, b) => b.reach - a.reach)[0];
+            D.widestClass = [...D.changedClasses.values()].filter(i => !i.model && i.reach > 0).sort((a, b) => b.reach - a.reach)[0];
+            return D;
+        }
+
+        /** Walk over callers from one changed class: call depth and next hop towards it, for every caller. */
+        function classWalk(info) {
+            if (info.walk) return info.walk;
+            const depth = new Map(), next = new Map(), queue = [];
+            info.changes.forEach(c => { depth.set(c.m, 0); queue.push(c.m); });
+            for (let h = 0; h < queue.length; h++) {
+                const m = queue[h];
+                for (let e = G.revOffsets[m]; e < G.revOffsets[m + 1]; e++) {
+                    const caller = G.revSources[e];
+                    if (!depth.has(caller)) { depth.set(caller, depth.get(m) + 1); next.set(caller, m); queue.push(caller); }
+                }
+            }
+            return (info.walk = { depth, next });
+        }
+
+        // ---------- labels
+        const plural = (n, one, many) => `${fmt(n)} ${n === 1 ? one : many}`;
+        function routeNode(m) {
+            const route = G.entryRoutes[m];
+            const span = el('span', 'lbl');
+            if (route && /^[A-Z|]+ /.test(route)) {
+                const [verb, ...rest] = route.split(' ');
+                const v = el('span', 'verb ' + (/^(GET|POST|PUT|PATCH|DELETE)$/.test(verb) ? verb.toLowerCase() : 'other'), verb);
+                span.append(v, document.createTextNode(rest.join(' ')));
+            } else {
+                span.textContent = route || qualifiedLabel(m);
+            }
+            span.title = `${route ? route + ' — ' : ''}${qualifiedLabel(m)}`;
+            return span;
+        }
+        const mini = (cls, text) => el('span', 'mini ' + cls, text);
+        function span(lines) {
+            if (!lines.length) return 'anonymous class';
+            const a = Math.min(...lines), b = Math.max(...lines);
+            return a === b ? `:${a}` : `:${a}-${b}`;
+        }
+        const fileName = path => path.split('/').pop();
+
+        // ---------- page
+        async function buildImpact() {
+            IMP.d = deriveImpact();
+            const D = IMP.d;
+            await ensureSignatures([...D.changed.map(c => c.m), ...D.entries.map(e => e.m), ...D.entries.map(e => e.near)]);
+            IMP.built = true;
+            if (D.widestClass) IMP.focus = D.widestClass.cls;
+            renderImpact();
+        }
+
+        function renderImpact() {
+            const D = IMP.d, I = G.impact;
+            const page = $('impact');
+            page.replaceChildren();
+
+            // header: breadcrumb + tabs
+            const head = el('div', 'imp-head');
+            const crumb = el('div', 'crumb');
+            crumb.append(el('b', null, 'Change impact'), el('span', null, '·'), el('span', null, `vs ${I.base}`),
+                el('span', 'tagx', `profile: ${G.manifest.profiles.join(', ')}`));
+            const tabs = el('div', 'tabs');
+            [['graph', 'Graph'], ['qa', `QA checklist (${D.entries.length})`], ['changes', `Changes (${D.changedClasses.size} classes)`]]
+                .forEach(([id, text]) => {
+                    const b = el('button', IMP.tab === id ? 'on' : null, text);
+                    b.type = 'button';
+                    b.addEventListener('click', () => { IMP.tab = id; renderImpact(); });
+                    tabs.appendChild(b);
+                });
+            head.append(crumb, tabs);
+            page.appendChild(head);
+
+            // configuration warning
+            const config = D.changed.filter(c => c.config);
+            if (config.length) {
+                const b = el('div', 'banner');
+                b.append(el('span', null, '⚠️'), el('span', null,
+                    `Configuration changed: ${config.map(c => qualifiedLabel(c.m)).join(', ')}. It can affect every endpoint ` +
+                    '(security, serialization, data sources…), so smoke-test the application broadly, not only the entry points listed here.'));
+                page.appendChild(b);
+            }
+
+            // KPI cards
+            const kpis = el('div', 'kpis');
+            const card = (title, big, unit, foot) => {
+                const k = el('div', 'kpi glass');
+                const b = el('div', 'big', fmt(big));
+                b.appendChild(el('small', null, unit));
+                k.append(el('div', 'eyebrow', title), b, el('div', 'foot2', foot));
+                return k;
+            };
+            kpis.appendChild(card('Changed methods', D.changed.length, 'methods changed',
+                `across ${plural(D.changedClasses.size, 'class', 'classes')}` + (D.newIds.size ? ` · ${D.newIds.size} new` : '')));
+            kpis.appendChild(card('Affected entry points', D.entries.length, 'entry points',
+                `${D.direct.length} edited directly · ${D.indirect.length} through dependencies`));
+            const hot = el('div', 'kpi hot');
+            hot.appendChild(el('div', 'eyebrow', 'Widest change'));
+            if (D.widest) {
+                hot.append(el('div', 'method', qualifiedLabel(D.widest.m)),
+                    el('div', 'foot2', `reaches ${plural(D.widest.reach, 'entry point', 'entry points')}`));
+                hot.title = 'Show in the graph';
+                hot.addEventListener('click', () => { IMP.tab = 'graph'; IMP.focus = classOf(D.widest.m); renderImpact(); });
+            } else {
+                hot.append(el('div', 'method', '—'), el('div', 'foot2', 'no change reaches an entry point'));
+            }
+            kpis.appendChild(hot);
+            const um = I.unmapped;
+            kpis.appendChild(card('Not mapped', um.length, 'files & lines',
+                um.length ? [...new Set(um.map(u => fileName(u.file)))].slice(0, 3).join(', ') + (um.length > 3 ? '…' : '') : 'everything mapped to methods'));
+            page.appendChild(kpis);
+
+            if (IMP.tab === 'graph') renderGraphTab(page);
+            else if (IMP.tab === 'qa') renderQaTab(page);
+            else renderChangesTab(page);
+        }
+
+        // ---------- graph tab
+        function renderGraphTab(page) {
+            const D = IMP.d;
+            const body = el('div', 'imp-body');
+            const box = el('div', 'graphbox glass');
+            const bar = el('div', 'toolbar');
+            const risk = [['all', 'All', null], ['wide', `Wide (≥${D.wideMin})`, '#ef4444'], ['medium', 'Medium', '#22d3ee'], ['narrow', 'Narrow (≤1)', '#10b981']];
+            risk.forEach(([id, text, color]) => {
+                const b = el('button', 'chipbtn' + (IMP.focus == null && IMP.filter === id ? ' on' : ''));
+                b.type = 'button';
+                if (color) { const d = el('span', 'd'); d.style.background = color; b.appendChild(d); }
+                b.appendChild(document.createTextNode(text));
+                b.addEventListener('click', () => { IMP.filter = id; IMP.focus = null; renderImpact(); });
+                bar.appendChild(b);
+            });
+            bar.appendChild(el('span', 'grow'));
+            if (IMP.focus != null) bar.appendChild(el('span', 'origin', `● Focus: ${G.classNames[IMP.focus]}`));
+            const fit = el('button', 'chipbtn', '⤢ Fit');
+            fit.type = 'button';
+            fit.addEventListener('click', () => IMP.cy && IMP.cy.animate({ fit: { padding: 40 }, duration: 300 }));
+            bar.appendChild(fit);
+            const holder = el('div');
+            holder.id = 'impact-cy';
+            box.append(bar, holder);
+            const detail = el('aside', 'detail glass');
+            body.append(box, detail);
+            page.appendChild(body);
+
+            if (IMP.cy) IMP.cy.destroy();
+            IMP.cy = cytoscape({
+                container: holder, minZoom: 0.15, maxZoom: 2.5,
+                style: [
+                    { selector: 'node', style: {
+                            'shape': 'round-rectangle', 'width': 'data(nw)', 'height': 'data(nh)',
+                            'background-color': '#0b1628', 'border-width': 1.5, 'border-color': 'data(color)',
+                            'label': 'data(label)', 'text-wrap': 'wrap', 'text-valign': 'center', 'text-halign': 'center',
+                            'color': '#e2e8f0', 'font-family': 'JetBrains Mono, ui-monospace, Consolas, monospace', 'font-size': 11, 'line-height': 1.35 }},
+                    { selector: 'node[?changed]', style: { 'border-color': '#f59e0b', 'background-color': '#1f1405' } },
+                    { selector: 'node[risk="wide"]', style: { 'border-color': '#ef4444', 'background-color': '#4c0d0d',
+                            'underlay-color': '#ef4444', 'underlay-opacity': 0.18, 'underlay-padding': 8 } },
+                    { selector: 'node.sel', style: { 'border-width': 3, 'border-color': '#f8fafc' } },
+                    { selector: 'edge', style: {
+                            'curve-style': 'bezier', 'width': 'data(w)', 'line-color': '#4b5b73', 'target-arrow-shape': 'triangle',
+                            'target-arrow-color': '#4b5b73', 'arrow-scale': 0.8, 'label': 'data(label)',
+                            'font-family': 'JetBrains Mono, ui-monospace, Consolas, monospace', 'font-size': 10, 'color': '#cbd5e1',
+                            'text-background-color': '#030a14', 'text-background-opacity': 0.9, 'text-background-padding': 3,
+                            'text-background-shape': 'roundrectangle' }},
+                    { selector: 'edge.hl', style: { 'line-color': '#22d3ee', 'target-arrow-color': '#22d3ee', 'color': '#e0f2fe' } },
+                    { selector: '.dim', style: { 'opacity': 0.25 } }
+                ]
+            });
+            IMP.cy.add(impactElements());
+            IMP.cy.fit(undefined, 40);
+            IMP.cy.on('tap', 'node', evt => {
+                const n = evt.target;
+                if (n.data('changed') && IMP.focus !== n.data('cls')) { IMP.focus = n.data('cls'); renderImpact(); return; }
+                selectImpactNode(n.data('cls'), detail);
+            });
+            IMP.cy.on('mouseover', 'node', () => { holder.style.cursor = 'pointer'; });
+            IMP.cy.on('mouseout', 'node', () => { holder.style.cursor = ''; });
+
+            if (IMP.focus != null) selectImpactNode(IMP.focus, detail);
+            else detailHint(detail);
+        }
+
+        /** Changed classes and the classes holding the entry points they reach, one edge per pair. */
+        function impactElements() {
+            const D = IMP.d;
+            const nodes = new Map(), edges = [];
+            const node = cls => {
+                if (!nodes.has(cls)) nodes.set(cls, { cls, changed: false, entryCount: 0 });
+                return nodes.get(cls);
+            };
+            const sources = IMP.focus != null
+                ? [D.changedClasses.get(IMP.focus)].filter(Boolean)
+                : [...D.changedClasses.values()].filter(i => i.reach > 0 && !i.model && (IMP.filter === 'all' || D.risk(i.reach) === IMP.filter));
+            sources.forEach(info => {
+                node(info.cls).changed = true;
+                const walk = classWalk(info);
+                const byClass = new Map();
+                info.entries.forEach(m => {
+                    const k = classOf(m), d = walk.depth.get(m) ?? 0;
+                    const cur = byClass.get(k) || { count: 0, hops: Infinity };
+                    cur.count++; cur.hops = Math.min(cur.hops, d);
+                    byClass.set(k, cur);
+                });
+                byClass.forEach((v, k) => {
+                    node(k).entryCount = (D.entryClasses.get(k) || { entries: [] }).entries.length;
+                    if (k !== info.cls) edges.push({ from: info.cls, to: k, ...v });
+                });
+            });
+
+            // layout: focus = hub and spokes; overview = changed classes left, entry classes right
+            const list = [...nodes.values()];
+            const pos = new Map();
+            if (IMP.focus != null) {
+                const others = list.filter(n => n.cls !== IMP.focus).sort((a, b) => b.entryCount - a.entryCount);
+                pos.set(IMP.focus, { x: 0, y: 0 });
+                const r = Math.max(230, others.length * 34);
+                others.forEach((n, i) => {
+                    const a = (i / Math.max(1, others.length)) * Math.PI * 2 - Math.PI / 2;
+                    pos.set(n.cls, { x: r * Math.cos(a) * 1.35, y: r * Math.sin(a) });
+                });
+            } else {
+                // classes holding entry points on the right (even when they changed too), the rest on the left
+                const left = list.filter(n => n.changed && !n.entryCount).sort((a, b) => (D.changedClasses.get(b.cls).reach - D.changedClasses.get(a.cls).reach));
+                const right = list.filter(n => n.entryCount).sort((a, b) => (b.changed - a.changed) || (b.entryCount - a.entryCount));
+                left.forEach((n, i) => pos.set(n.cls, { x: 0, y: (i - (left.length - 1) / 2) * 78 }));
+                right.forEach((n, i) => pos.set(n.cls, { x: 620, y: (i - (right.length - 1) / 2) * 64 }));
+            }
+
+            const els = list.map(n => {
+                const info = D.changedClasses.get(n.cls);
+                const lines = [G.classNames[n.cls]];
+                if (n.changed) lines.push(`${plural(info.changes.length, 'change', 'changes')} · ${plural(info.reach, 'entry point', 'entry points')}`);
+                else lines.push(`(${plural(n.entryCount, 'entry point', 'entry points')})`);
+                const widest = Math.max(...lines.map(l => l.length));
+                return { group: 'nodes', position: pos.get(n.cls), data: {
+                        id: 'n' + n.cls, cls: n.cls, label: lines.join('\n'), changed: n.changed,
+                        nw: Math.round(widest * 6.9 + 26), nh: lines.length * 15 + 18,
+                        risk: n.changed ? D.risk(info.reach) : '', color: stereo(n.cls).color } };
+            });
+            edges.forEach((e, i) => els.push({ group: 'edges', data: {
+                    id: 'x' + i, source: 'n' + e.from, target: 'n' + e.to,
+                    w: Math.min(5, 1 + Math.log2(e.count + 1)),
+                    label: `${plural(e.count, 'route', 'routes')} · ${e.hops === Infinity ? '?' : plural(e.hops, 'hop', 'hops')}` } }));
+            return els;
+        }
+
+        function detailHint(detail) {
+            detail.replaceChildren(el('div', 'eyebrow', 'Details'),
+                el('p', 'muted', 'Click a changed class (amber, red when its reach is wide) to focus on it, or a class with entry points to see which of them are affected.'));
+        }
+
+        function selectImpactNode(cls, detail) {
+            const D = IMP.d;
+            IMP.cy.nodes().removeClass('sel');
+            IMP.cy.edges().removeClass('hl');
+            const node = IMP.cy.getElementById('n' + cls);
+            node.addClass('sel');
+            node.connectedEdges().addClass('hl');
+            const info = D.changedClasses.get(cls);
+            if (info && (info.reach > 0 || !D.entryClasses.has(cls))) changedClassDetail(info, detail);
+            else entryClassDetail(D.entryClasses.get(cls), detail);
+        }
+
+        function detailHead(detail, cls, tags) {
+            const s = stereo(cls);
+            const top = el('div', 'drawer-head');
+            const chip = el('span', 'chip', stereotypeOf(cls) === 'other' ? 'Class' : '@' + s.label);
+            chip.style.color = s.color; chip.style.borderColor = s.color + '66'; chip.style.background = s.color + '14';
+            top.append(chip, ...tags);
+            detail.append(top, el('h3', null, G.classNames[cls]), el('div', 'path', classFqn(cls)));
+        }
+
+        function changedClassDetail(info, detail) {
+            const D = IMP.d;
+            const walk = classWalk(info);
+            detail.replaceChildren();
+            const r = D.risk(info.reach);
+            detailHead(detail, info.cls, [
+                mini(r === 'wide' ? 'wide' : '', r === 'wide' ? '🔥 Wide reach' : r === 'medium' ? 'Medium reach' : 'Narrow reach'),
+                ...(info.config ? [mini('cfg', 'Configuration')] : [])]);
+            const entries = [...info.entries].sort((a, b) => (walk.depth.get(a) ?? 0) - (walk.depth.get(b) ?? 0));
+            const maxHops = entries.reduce((mx, m) => Math.max(mx, walk.depth.get(m) ?? 0), 0);
+            const trio = el('div', 'trio');
+            [[info.reach, 'Entry points'], [info.changes.length, 'Methods changed'], [maxHops, 'Max hops']].forEach(([v, l], i) => {
+                const b = el('b', null, fmt(v));
+                if (i === 0) b.style.color = r === 'wide' ? '#f87171' : '#22d3ee';
+                const d = el('div'); d.append(b, el('span', null, l)); trio.appendChild(d);
+            });
+            detail.appendChild(trio);
+
+            const sigs = el('div');
+            info.changes.forEach(c => {
+                const row = el('div', 'sigrow');
+                const lbl = el('span', 'lbl', methodLabel(c.m));
+                lbl.title = `${c.file}${span(c.lines)}`;
+                row.append(lbl);
+                if (c.added) row.appendChild(mini('new', '🆕 new'));
+                if (c.model) row.appendChild(mini('', 'model'));
+                row.appendChild(el('span', 'ln', span(c.lines)));
+                sigs.appendChild(row);
+            });
+            detail.appendChild(block('Modified signatures', `${info.changes.length}`, sigs));
+
+            if (entries.length) {
+                const list = el('div');
+                entries.slice(0, 200).forEach(m => {
+                    const row = el('button', 'eprow');
+                    row.type = 'button';
+                    row.title = 'Trace in the explorer';
+                    row.append(routeNode(m), el('span', 'hops', plural(walk.depth.get(m) ?? 0, 'hop', 'hops')));
+                    row.addEventListener('click', () => selectMethods([m]));
+                    list.appendChild(row);
+                });
+                detail.appendChild(block('Entry points reached', `${entries.length} routes`, list));
+
+                const deepest = entries[entries.length - 1];
+                const path = [deepest];
+                for (let cur = deepest; walk.next.has(cur); cur = walk.next.get(cur)) path.push(walk.next.get(cur));
+                const classes = [];
+                path.forEach(m => { const n = G.classNames[classOf(m)]; if (classes[classes.length - 1] !== n) classes.push(n); });
+                const chain = el('div', 'chain', `${G.entryRoutes[deepest] || qualifiedLabel(deepest)} → ${classes.join(' → ')}`);
+                detail.appendChild(block('Deepest call chain', `${plural(path.length - 1, 'hop', 'hops')}`, chain));
+            } else {
+                detail.appendChild(el('div', 'empty', info.config ? 'Configuration: not called by any entry point, but it can affect all of them.'
+                    : info.model ? 'Model methods called by frameworks (JSON or database mapping).' : 'No entry point reaches these changes.'));
+            }
+            const open = el('button', 'cta', 'Trace in explorer');
+            open.type = 'button';
+            open.style.marginTop = '8px';
+            open.addEventListener('click', () => selectMethods(info.changes.map(c => c.m)));
+            detail.appendChild(open);
+        }
+
+        function entryClassDetail(info, detail) {
+            const D = IMP.d;
+            detail.replaceChildren();
+            const edited = info.entries.filter(e => e.edited).length;
+            const fresh = info.entries.filter(e => e.edited && D.newIds.has(e.m)).length;
+            detailHead(detail, info.cls, [mini('', 'Entry points')]);
+            const trio = el('div', 'trio');
+            [[info.entries.length, 'Affected'], [edited, 'Edited directly'], [fresh, 'New']].forEach(([v, l]) => {
+                const d = el('div'); d.append(el('b', null, fmt(v)), el('span', null, l)); trio.appendChild(d);
+            });
+            detail.appendChild(trio);
+            const list = el('div');
+            info.entries.slice().sort((a, b) => a.hops - b.hops).forEach(e => {
+                const row = el('button', 'eprow');
+                row.type = 'button';
+                row.append(routeNode(e.m));
+                if (e.edited && D.newIds.has(e.m)) row.appendChild(mini('new', '🆕 new'));
+                if (!e.certain) row.appendChild(mini('may', 'may call'));
+                row.appendChild(el('span', 'hops', e.edited ? 'edited' : `via ${qualifiedLabel(e.near)} · ${plural(e.hops, 'hop', 'hops')}`));
+                row.addEventListener('click', () => selectMethods([e.m]));
+                list.appendChild(row);
+            });
+            detail.appendChild(block('Affected entry points', null, list));
+        }
+
+        // ---------- QA checklist tab (same logic as impact.md)
+        const KIND_ORDER = ['http', 'kafka', 'rabbit', 'jms', 'sqs', 'scheduled', 'event', ''];
+        const KIND_TITLES = { http: 'HTTP endpoints', kafka: 'Kafka consumers', rabbit: 'RabbitMQ listeners', jms: 'JMS listeners',
+            sqs: 'SQS listeners', scheduled: 'Scheduled jobs', event: 'Event listeners', '': 'Other entry points' };
+
+        function minimalTestSet(entries) {
+            const left = new Set();
+            entries.forEach(e => e.reachedList.forEach(m => left.add(m)));
+            const picks = [];
+            while (left.size) {
+                let best = null, bestCover = [];
+                for (const e of entries) {
+                    const cover = e.reachedList.filter(m => left.has(m));
+                    if (!cover.length) continue;
+                    const better = cover.length > bestCover.length || cover.length === bestCover.length
+                        && (e.certain && !best.certain || e.certain === best.certain && e.hops < best.hops);
+                    if (better) { best = e; bestCover = cover; }
+                }
+                if (!best) break;
+                picks.push({ e: best, covers: bestCover });
+                bestCover.forEach(m => left.delete(m));
+            }
+            return picks;
+        }
+
+        function checkRow(e, why) {
+            const D = IMP.d;
+            const row = el('label', 'check' + (IMP.checked.has(e.m) ? ' done' : ''));
+            const box = el('input');
+            box.type = 'checkbox';
+            box.checked = IMP.checked.has(e.m);
+            box.addEventListener('change', () => {
+                if (box.checked) IMP.checked.add(e.m); else IMP.checked.delete(e.m);
+                row.classList.toggle('done', box.checked);
+            });
+            row.append(box, routeNode(e.m));
+            if (e.edited && D.newIds.has(e.m)) row.appendChild(mini('new', '🆕 new'));
+            if (!e.certain) row.appendChild(mini('may', 'may call'));
+            if (why) row.appendChild(el('span', 'why', why));
+            return row;
+        }
+
+        function groupedChecklist(parent, entries, withReason) {
+            const byKind = new Map(KIND_ORDER.map(k => [k, []]));
+            entries.forEach(e => byKind.get(entryKind(e.m)).push(e));
+            byKind.forEach((list, kind) => {
+                if (!list.length) return;
+                parent.appendChild(el('h4', null, `${KIND_TITLES[kind]} (${list.length})`));
+                const byClass = new Map();
+                list.forEach(e => { const k = classOf(e.m); if (!byClass.has(k)) byClass.set(k, []); byClass.get(k).push(e); });
+                [...byClass.entries()].sort((a, b) => G.classNames[a[0]].localeCompare(G.classNames[b[0]])).forEach(([cls, items]) => {
+                    parent.appendChild(el('div', 'clsname', G.classNames[cls]));
+                    items.sort((a, b) => String(G.entryRoutes[a.m]).localeCompare(String(G.entryRoutes[b.m]))).forEach(e => {
+                        const why = withReason
+                            ? `via ${qualifiedLabel(e.near)} · ${plural(e.hops, 'hop', 'hops')}${e.changes > 1 ? ` (+${e.changes - 1} more)` : ''}`
+                            : methodLabel(e.m);
+                        parent.appendChild(checkRow(e, why));
+                    });
+                });
+            });
+        }
+
+        function renderQaTab(page) {
+            const D = IMP.d;
+            const wrap = el('div', 'qa');
+            page.appendChild(wrap);
+
+            // minimal test set
+            const picks = minimalTestSet(D.entries);
+            const covered = picks.reduce((n, p) => n + p.covers.length, 0);
+            const setCard = el('div', 'card glass');
+            setCard.append(el('h2', null, 'Minimal test set'),
+                el('div', 'sub', `Testing these ${plural(picks.length, 'entry point', 'entry points')} exercises all ${plural(covered, 'changed method', 'changed methods')} that any entry point reaches.`));
+            picks.forEach(p => setCard.appendChild(checkRow(p.e, `covers ${plural(p.covers.length, 'change', 'changes')}`)));
+            const unreached = D.changed.filter(c => c.reach === 0);
+            if (unreached.length) {
+                setCard.appendChild(el('h4', null, `Not reached by any entry point (${unreached.length})`));
+                const groups = [
+                    [unreached.filter(c => c.config), 'Configuration: runs at startup and may affect every endpoint; smoke-test broadly'],
+                    [unreached.filter(c => !c.config && c.model), 'Model methods called by frameworks (JSON or database mapping)'],
+                    [unreached.filter(c => !c.config && !c.model), 'No caller found: check with unit tests']];
+                groups.forEach(([list, title]) => {
+                    if (!list.length) return;
+                    setCard.appendChild(el('div', 'callout', `${title}: ${list.map(c => qualifiedLabel(c.m)).join(', ')}`));
+                });
+            }
+            const copy = el('button', 'ghostbtn', '⧉ Copy checklist as Markdown');
+            copy.type = 'button';
+            copy.style.marginTop = '12px';
+            copy.addEventListener('click', async () => {
+                const text = checklistMarkdown(picks);
+                try { await navigator.clipboard.writeText(text); } catch (e) {
+                    const ta = el('textarea'); ta.value = text; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove();
+                }
+                copy.textContent = '✔ Copied';
+                setTimeout(() => { copy.textContent = '⧉ Copy checklist as Markdown'; }, 1500);
+            });
+            setCard.appendChild(copy);
+            wrap.appendChild(setCard);
+
+            // through dependencies, with the dominant shared change folded
+            const dep = el('div', 'card glass');
+            dep.append(el('h2', null, `Affected through dependencies (${D.indirect.length})`),
+                el('div', 'sub', 'The entry points most easily missed in testing: their own code did not change.'));
+            const onlyVia = new Map();
+            D.indirect.filter(e => e.changes === 1).forEach(e => {
+                if (!onlyVia.has(e.near)) onlyVia.set(e.near, []);
+                onlyVia.get(e.near).push(e);
+            });
+            const dominant = [...onlyVia.entries()].sort((a, b) => b[1].length - a[1].length)[0];
+            if (dominant && dominant[1].length >= 5 && dominant[1].length >= D.indirect.length * 0.4) {
+                const folded = new Set(dominant[1]);
+                dep.appendChild(el('div', 'callout', `${dominant[1].length} of ${D.indirect.length} are reached only through ` +
+                    `${qualifiedLabel(dominant[0])}. They exercise the same changed code, so a few of them (see the minimal test set) cover that change.`));
+                groupedChecklist(dep, D.indirect.filter(e => !folded.has(e)), true);
+                const det = el('details');
+                det.appendChild(el('summary', null, `${plural(folded.size, 'entry point', 'entry points')} reached only through ${qualifiedLabel(dominant[0])}`));
+                groupedChecklist(det, [...folded], true);
+                dep.appendChild(det);
+            } else if (D.indirect.length) {
+                groupedChecklist(dep, D.indirect, true);
+            } else {
+                dep.appendChild(el('div', 'empty', 'None: every affected entry point was edited directly.'));
+            }
+            wrap.appendChild(dep);
+
+            const dir = el('div', 'card glass');
+            dir.append(el('h2', null, `Edited directly (${D.direct.length})`), el('div', 'sub', 'Entry points whose own code changed.'));
+            if (D.direct.length) groupedChecklist(dir, D.direct, false);
+            wrap.appendChild(dir);
+        }
+
+        function checklistMarkdown(picks) {
+            const D = IMP.d;
+            const line = (e, extra) => `- [${IMP.checked.has(e.m) ? 'x' : ' '}] ${G.entryRoutes[e.m] ? '`' + G.entryRoutes[e.m] + '` — ' : ''}` +
+                `\`${qualifiedLabel(e.m)}\`${e.edited && D.newIds.has(e.m) ? ' · 🆕 new' : ''}${extra || ''}${e.certain ? '' : ' · ⚠️ may call'}`;
+            const out = [`## QA checklist (vs ${G.impact.base})`, '', '### Minimal test set', ''];
+            picks.forEach(p => out.push(line(p.e, ` · covers ${plural(p.covers.length, 'change', 'changes')}`)));
+            out.push('', `### Affected through dependencies (${D.indirect.length})`, '');
+            D.indirect.forEach(e => out.push(line(e, ` · via \`${qualifiedLabel(e.near)}\`, ${plural(e.hops, 'hop', 'hops')}`)));
+            out.push('', `### Edited directly (${D.direct.length})`, '');
+            D.direct.forEach(e => out.push(line(e)));
+            return out.join('\n');
+        }
+
+        // ---------- changes tab
+        function renderChangesTab(page) {
+            const D = IMP.d, I = G.impact;
+            const wrap = el('div', 'qa');
+            page.appendChild(wrap);
+            const infos = [...D.changedClasses.values()].sort((a, b) => (a.model - b.model) || (b.reach - a.reach));
+            infos.forEach(info => {
+                const card = el('div', 'clscard glass');
+                const top = el('div', 'top');
+                const dot = el('span', 'dot');
+                dot.style.cssText = `width:9px;height:9px;border-radius:50%;background:${stereo(info.cls).color}`;
+                top.append(dot, el('b', null, G.classNames[info.cls]));
+                if (info.reach >= D.wideMin) top.appendChild(mini('wide', '🔥 wide'));
+                if (info.config) top.appendChild(mini('cfg', 'configuration'));
+                if (info.model) top.appendChild(mini('', 'model'));
+                top.appendChild(el('span', 'meta', `${plural(info.changes.length, 'method', 'methods')} · reaches ${plural(info.reach, 'entry point', 'entry points')}`));
+                card.appendChild(top);
+                card.appendChild(el('div', 'path', info.changes[0].file));
+                info.changes.slice().sort((a, b) => b.reach - a.reach).forEach(c => {
+                    const row = el('button', 'eprow');
+                    row.type = 'button';
+                    row.title = 'Show in the graph';
+                    row.append(el('span', 'lbl', methodLabel(c.m)));
+                    if (c.added) row.appendChild(mini('new', '🆕 new'));
+                    row.appendChild(el('span', 'hops', `${span(c.lines)} · ${c.reach < 0 ? '–' : plural(c.reach, 'entry point', 'entry points')}`));
+                    row.addEventListener('click', () => { IMP.tab = 'graph'; IMP.focus = info.cls; renderImpact(); });
+                    card.appendChild(row);
+                });
+                wrap.appendChild(card);
+            });
+            if (I.unmapped.length) {
+                const card = el('div', 'card glass');
+                card.append(el('h2', null, `Not mapped to a method (${I.unmapped.length})`),
+                    el('div', 'sub', 'Check these by hand: configuration and resources can change behavior without touching Java code.'));
+                I.unmapped.forEach(u => {
+                    const row = el('div', 'sigrow');
+                    row.append(el('span', 'lbl', `${u.file}${u.lines.length ? ':' + u.lines.join(', ') : ''}`), el('span', 'ln', u.reason));
+                    card.appendChild(row);
+                });
+                wrap.appendChild(card);
+            }
+        }
+
+        window.addEventListener('resize', () => { if (IMP.cy && view === 'impact') IMP.cy.resize(); });
+
         function reset() {
+            setView('explorer');
             closeResults();
             lastSelection = null;
             setRoute('');
@@ -1209,7 +1867,7 @@
         document.addEventListener('keydown', evt => {
             if ((evt.key === 'k' || evt.key === 'K') && (evt.metaKey || evt.ctrlKey)) { evt.preventDefault(); searchBox.focus(); searchBox.select(); }
             else if (evt.key === '/' && document.activeElement !== searchBox) { evt.preventDefault(); searchBox.focus(); }
-            else if (evt.key === 'Escape' && document.activeElement !== searchBox) reset();
+            else if (evt.key === 'Escape' && document.activeElement !== searchBox && view !== 'impact') reset();
         });
         document.addEventListener('click', evt => { if (!$('searchbox').contains(evt.target)) closeResults(); });
         if (/Mac|iPhone|iPad/.test(navigator.platform)) $('kbd-hint').textContent = '⌘K';
@@ -1247,13 +1905,15 @@
             if (G.impact) {
                 const p = pill('amber', `${fmt(G.impact.changed.length)} Changed`);
                 p.insertAdjacentHTML('beforeend',
-                    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+                    '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
                     '<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>');
                 p.title = 'View change impact';
                 p.setAttribute('role', 'button');
                 p.tabIndex = 0;
                 p.addEventListener('click', () => showImpact());
                 p.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); showImpact(); } });
+                document.body.classList.add('has-impact');
+                $('rail-count').textContent = G.impact.changed.length;
             }
             const when = new Date(G.manifest.generatedAt);
             $('runmeta').textContent = `profile ${G.manifest.profiles.join(', ')} · ${isNaN(when) ? '' : when.toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}`;

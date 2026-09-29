@@ -3,7 +3,15 @@ package com.scriptchess.marga.report;
 import com.scriptchess.marga.graph.CallGraph;
 import com.scriptchess.marga.impact.Impact;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.Set;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 /** Renders an {@link Impact} as report data, impact.json and a QA-friendly impact.md. */
 final class ImpactFormatter {
@@ -36,6 +44,7 @@ final class ImpactFormatter {
             item.put("reach", c.reach());
             item.put("model", isModelChange(g, c.method()));
             item.put("added", c.added());
+            item.put("config", g.configMethods()[c.method()]);
             changed.add(item);
         }
         List<Object> entries = new ArrayList<>();
@@ -47,6 +56,7 @@ final class ImpactFormatter {
             item.put("hops", e.hops());
             item.put("certain", e.certain());
             item.put("changes", e.changes());
+            item.put("reached", e.reachedChanges());
             entries.add(item);
         }
         Map<String, Object> data = new LinkedHashMap<>();
@@ -113,9 +123,12 @@ final class ImpactFormatter {
         List<Impact.EntryImpact> indirect = impact.entries().stream().filter(e -> !e.edited()).toList();
         List<Impact.EntryImpact> direct = impact.entries().stream().filter(Impact.EntryImpact::edited).toList();
         long classes = impact.changed().stream().map(c -> classOf(g, c.method())).distinct().count();
+        Map<Integer, Impact.ChangedMethod> changedById = new LinkedHashMap<>();
+        impact.changed().forEach(c -> changedById.put(c.method(), c));
         Set<Integer> newMethods = new HashSet<>();
         impact.changed().stream().filter(Impact.ChangedMethod::added).forEach(c -> newMethods.add(c.method()));
         long newEntries = direct.stream().filter(e -> newMethods.contains(e.method())).count();
+
         md.append("# Marga change impact\n\n");
         md.append("**Compared against:** `").append(impact.base()).append("` · **Profile:** ")
                 .append(String.join(", ", g.activeProfiles())).append("\n\n");
@@ -129,6 +142,7 @@ final class ImpactFormatter {
             md.append(" · ").append(count(impact.unmapped().size(), "change", "changes")).append(" not mapped");
         }
         md.append("\n\n");
+
         List<Impact.ChangedMethod> config = impact.changed().stream().filter(c -> g.configMethods()[c.method()]).toList();
         if (!config.isEmpty()) {
             md.append("> ⚠️ **Configuration changed:** ")
@@ -136,6 +150,7 @@ final class ImpactFormatter {
                     .append(". Configuration (security, serialization, data sources…) can affect every endpoint, "
                             + "so smoke-test the application broadly, not only the entry points listed below.\n\n");
         }
+
         // ---- minimal test set
         boolean allRanked = impact.changed().stream().allMatch(c -> c.reach() >= 0);
         if (allRanked && !impact.entries().isEmpty()) {
@@ -173,6 +188,7 @@ final class ImpactFormatter {
             }
             md.append('\n');
         }
+
         // ---- QA checklist
         md.append("## QA checklist\n\n");
         if (impact.entries().isEmpty()) {
@@ -238,8 +254,7 @@ final class ImpactFormatter {
                         }
                         md.append("</summary>\n\n| Method | Where | Entry points reached |\n|---|---|---:|\n");
                         e.getValue().stream().sorted(Comparator.comparingInt(Impact.ChangedMethod::reach).reversed())
-                                .forEach(ch -> md.append("| ").append(ch.added() ? "🆕 " : "").append('`')
-                                        .append(label(g, ch.method())).append("` | `")
+                                .forEach(ch -> md.append("| ").append(ch.added() ? "🆕 " : "").append('`').append(label(g, ch.method())).append("` | `")
                                         .append(where(ch)).append("` | ").append(ch.reach() < 0 ? "–" : ch.reach())
                                         .append(" |\n"));
                         md.append("\n</details>\n\n");
@@ -281,7 +296,8 @@ final class ImpactFormatter {
      * When one change alone explains most dependency-affected entry points (a shared helper),
      * those are folded away: they all exercise the same changed code.
      */
-    private static void dependencyChecklist(StringBuilder md, CallGraph g, List<Impact.EntryImpact> indirect, Set<Integer> newMethods) {
+    private static void dependencyChecklist(StringBuilder md, CallGraph g, List<Impact.EntryImpact> indirect,
+                                            Set<Integer> newMethods) {
         Map<Integer, List<Impact.EntryImpact>> onlyVia = new LinkedHashMap<>();
         indirect.stream().filter(e -> e.changes() == 1)
                 .forEach(e -> onlyVia.computeIfAbsent(e.nearestChange(), k -> new ArrayList<>()).add(e));
@@ -307,6 +323,22 @@ final class ImpactFormatter {
     }
 
     private record Pick(Impact.EntryImpact entry, List<Integer> covers) {
+    }
+
+    private static void unreachedGroup(StringBuilder md, CallGraph g, List<Impact.ChangedMethod> changes, String title) {
+        if (changes.isEmpty()) {
+            return;
+        }
+        md.append("- ").append(title).append(": ");
+        md.append(String.join(", ", changes.stream().limit(10).map(c -> "`" + qualified(g, c.method()) + "`").toList()));
+        if (changes.size() > 10) {
+            md.append(" and ").append(changes.size() - 10).append(" more");
+        }
+        md.append('\n');
+    }
+
+    private static boolean isAdded(Impact impact, int method) {
+        return impact.changed().stream().anyMatch(c -> c.method() == method && c.added());
     }
 
     /**
@@ -352,7 +384,8 @@ final class ImpactFormatter {
     }
 
     /** Checklist items grouped by entry-point kind, then by class. */
-    private static void checklist(StringBuilder md, CallGraph g, List<Impact.EntryImpact> entries, boolean withReason, Set<Integer> newMethods) {
+    private static void checklist(StringBuilder md, CallGraph g, List<Impact.EntryImpact> entries, boolean withReason,
+                                  Set<Integer> newMethods) {
         Map<Integer, List<Impact.EntryImpact>> byKind = new LinkedHashMap<>();
         for (int kind : KIND_ORDER) {
             byKind.put(kind, new ArrayList<>());
@@ -446,7 +479,15 @@ final class ImpactFormatter {
     }
 
     private static String where(Impact.ChangedMethod c) {
-        return c.lines().isEmpty() ? c.file() + " (inside a changed anonymous class)" : c.file() + ":" + ranges(c.lines());
+        if (c.lines().isEmpty()) {
+            return c.file() + " (inside a changed anonymous class)";
+        }
+        if (c.added()) { // a whole new method: its span reads better than every fragment
+            int first = c.lines().stream().mapToInt(Integer::intValue).min().orElse(0);
+            int last = c.lines().stream().mapToInt(Integer::intValue).max().orElse(0);
+            return c.file() + ":" + (first == last ? String.valueOf(first) : first + "-" + last);
+        }
+        return c.file() + ":" + ranges(c.lines());
     }
 
     /** [3,4,5,9] -> "3-5, 9" */
@@ -508,20 +549,5 @@ final class ImpactFormatter {
     private static String qualified(CallGraph g, int m) {
         boolean constructor = (g.methodFlags()[m] & CallGraph.M_CONSTRUCTOR) != 0;
         return constructor ? label(g, m) : g.classNames()[classOf(g, m)] + "." + label(g, m);
-    }
-    private static void unreachedGroup(StringBuilder md, CallGraph g, List<Impact.ChangedMethod> changes, String title) {
-        if (changes.isEmpty()) {
-            return;
-        }
-        md.append("- ").append(title).append(": ");
-        md.append(String.join(", ", changes.stream().limit(10).map(c -> "`" + qualified(g, c.method()) + "`").toList()));
-        if (changes.size() > 10) {
-            md.append(" and ").append(changes.size() - 10).append(" more");
-        }
-        md.append('\n');
-    }
-
-    private static boolean isAdded(Impact impact, int method) {
-        return impact.changed().stream().anyMatch(c -> c.method() == method && c.added());
     }
 }
