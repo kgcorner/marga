@@ -437,11 +437,14 @@
                 implOffsets: i32(core.implOffsets),
                 implSources: i32(core.implSources),
                 entryRoutes: core.entryRoutes || {},
+                modules: core.modules || [],
+                classModule: core.classModule ? i32(core.classModule) : null,
                 names: search.names,
                 nameIdx: i32(search.idx)
             });
             G.M = G.methodFlags.length;
             G.C = G.classNames.length;
+            if (!G.classModule) G.classModule = new Int32Array(G.C);
             G.sigs = new Array(G.M);
             G.sigLoaded = new Set();
             G.namesLower = G.names.map(n => n.toLowerCase());
@@ -593,6 +596,18 @@
             textureOnViewport: true,
             hideEdgesOnViewport: true,
             style: [
+                // module circles (drawn behind everything)
+                { selector: 'node[type="module"]', style: {
+                        'shape': 'ellipse', 'width': 'data(size)', 'height': 'data(size)',
+                        'background-color': 'data(color)', 'background-opacity': 0.035,
+                        'border-width': 1.5, 'border-style': 'dashed', 'border-color': 'data(color)', 'border-opacity': 0.4,
+                        'label': 'data(label)', 'text-valign': 'top', 'text-halign': 'center', 'text-margin-y': 34,
+                        'font-family': 'JetBrains Mono, ui-monospace, Consolas, monospace', 'font-size': 16, 'font-weight': 700,
+                        'color': 'data(color)', 'text-background-color': '#030a14', 'text-background-opacity': 0.9,
+                        'text-background-padding': 7, 'text-background-shape': 'roundrectangle',
+                        'text-border-width': 1, 'text-border-color': 'data(color)', 'text-border-opacity': 0.55,
+                        'min-zoomed-font-size': 3, 'z-index': 0, 'z-index-compare': 'manual' }},
+                { selector: 'node[type="module"].hl', style: { 'border-opacity': 0.85, 'background-opacity': 0.06 } },
                 // class spheres
                 { selector: 'node[type="class"]', style: {
                         'shape': 'ellipse', 'width': 'data(size)', 'height': 'data(size)',
@@ -686,12 +701,20 @@
             classes.forEach(c => {
                 const s = stereo(c);
                 elements.push({ group: 'nodes', data: {
-                        id: 'c' + c, type: 'class', cls: c, label: G.classNames[c], state: beanState(c),
+                        id: 'c' + c, type: 'class', cls: c, mod: G.classModule[c], label: G.classNames[c], state: beanState(c),
                         color: s.color, core: s.core, stereo: stereotypeOf(c), size: 60 } });
             });
             methodIds.forEach(m => elements.push({ group: 'nodes', data: {
                     id: 'm' + m, type: 'method', mid: m, cls: classOf(m), label: methodLabel(m), entry: isEntry(m),
                     changed: !!(G.impact && G.impact.changedSet.has(m)) } }));
+            // module circles, only when the drawn classes span more than one Maven module
+            const moduleCounts = new Map();
+            classes.forEach(c => moduleCounts.set(G.classModule[c], (moduleCounts.get(G.classModule[c]) || 0) + 1));
+            if (moduleCounts.size > 1) {
+                moduleCounts.forEach((count, mod) => elements.push({ group: 'nodes', data: {
+                        id: 'M' + mod, type: 'module', mod, size: 200, color: MODULE_COLORS[mod % MODULE_COLORS.length],
+                        label: `${G.modules[mod] || 'module ' + mod}  ·  ${plural(count, 'class', 'classes')}` } }));
+            }
             const classEdges = new Map();
             methodIds.forEach(m => {
                 for (let e = G.revOffsets[m]; e < G.revOffsets[m + 1]; e++) {
@@ -745,7 +768,47 @@
         const methodOrder = (a, b) =>
             (b.data('entry') - a.data('entry')) || (b.data('changed') - a.data('changed')) || a.data('label').localeCompare(b.data('label'));
 
-        function layoutGraph() {
+        const MODULE_PAD = 70, MODULE_GAP = 140;
+        const MODULE_COLORS = ['#38bdf8', '#a78bfa', '#34d399', '#f472b6', '#fbbf24', '#fb7185', '#22d3ee', '#c084fc'];
+
+        /** Force layout of circles (id, r) linked by edges, then overlap removal. Resolves to [{id, x, y, r}]. */
+        function coseCircles(items, edges, opts) {
+            const radius = new Map(items.map(i => [i.id, i.r]));
+            // an invisible hub linked to every item keeps unconnected items clustered around one centre
+            // instead of being packed in rows as separate components
+            const hub = opts.hub ? [{ group: 'nodes', data: { id: '__hub', d: 1 } },
+                ...items.map((i, k) => ({ group: 'edges', data: { id: 'hub' + k, source: '__hub', target: i.id } }))] : [];
+            const helper = cytoscape({
+                headless: true, styleEnabled: true,
+                elements: [
+                    ...items.map(i => ({ group: 'nodes', data: { id: i.id, d: i.r * 2 } })),
+                    ...edges.map(([a, b], k) => ({ group: 'edges', data: { id: 'h' + k, source: a, target: b } })),
+                    ...hub
+                ],
+                style: [{ selector: 'node', style: { width: 'data(d)', height: 'data(d)' } }]
+            });
+            return new Promise(resolve => {
+                const layout = helper.layout({
+                    name: 'cose', animate: false, randomize: true, nodeOverlap: 40,
+                    nodeRepulsion: () => opts.repulsion, idealEdgeLength: () => opts.edge,
+                    componentSpacing: opts.spacing, gravity: 1, numIter: 1500
+                });
+                layout.one('layoutstop', () => {
+                    const out = helper.nodes().filter(n => n.id() !== '__hub')
+                        .map(n => ({ id: n.id(), x: n.position('x'), y: n.position('y'), r: radius.get(n.id()) }));
+                    helper.destroy();
+                    removeOverlaps(out, opts.gap, 800);
+                    resolve(out);
+                });
+                layout.run();
+            });
+        }
+
+        /**
+         * Classes are laid out inside their Maven module first; modules are then placed by the calls
+         * between them, and every class is shifted into its module's circle.
+         */
+        async function layoutGraph() {
             const classes = cy.nodes('[type="class"]');
             const members = new Map();
             cy.nodes('[type="method"]').forEach(n => {
@@ -758,39 +821,75 @@
                 const n = (members.get(c.id()) || []).length;
                 radius.set(c.id(), Math.max(34, SPACING * Math.sqrt(n) * 0.75 + PAD));
             });
-            const helper = cytoscape({
-                headless: true, styleEnabled: true,
-                elements: [
-                    ...classes.map(c => ({ group: 'nodes', data: { id: c.id(), d: radius.get(c.id()) * 2 } })),
-                    ...cy.edges('[type="classEdge"]').map(e => ({ group: 'edges', data: { id: e.id(), source: e.source().id(), target: e.target().id() } }))
-                ],
-                style: [{ selector: 'node', style: { width: 'data(d)', height: 'data(d)' } }]
-            });
-            return new Promise(resolve => {
-                const layout = helper.layout({
-                    name: 'cose', animate: false, randomize: true,
-                    nodeOverlap: 40, nodeRepulsion: () => 400000, idealEdgeLength: () => 110,
-                    componentSpacing: 140, gravity: 1, numIter: 1500
+            const classEdges = cy.edges('[type="classEdge"]').map(e => [e.source().id(), e.target().id()]);
+            const classOpts = { repulsion: 400000, edge: 110, spacing: 140, gap: GAP };
+            const modules = cy.nodes('[type="module"]');
+            let circles;
+
+            if (modules.length < 2) {
+                circles = await coseCircles(classes.map(c => ({ id: c.id(), r: radius.get(c.id()) })), classEdges, classOpts);
+            } else {
+                const moduleOf = new Map(classes.map(c => [c.id(), 'M' + c.data('mod')]));
+                const byModule = new Map();
+                classes.forEach(c => {
+                    const mid = moduleOf.get(c.id());
+                    if (!byModule.has(mid)) byModule.set(mid, []);
+                    byModule.get(mid).push(c.id());
                 });
-                layout.one('layoutstop', () => {
-                    const circles = helper.nodes().map(n => ({ id: n.id(), x: n.position('x'), y: n.position('y'), r: radius.get(n.id()) }));
-                    helper.destroy();
-                    removeOverlaps(circles, GAP, 800);
-                    cy.batch(() => circles.forEach(c => {
-                        const node = cy.getElementById(c.id);
-                        node.position({ x: c.x, y: c.y });
-                        node.data('size', c.r * 2);
-                        const list = (members.get(c.id) || []).sort(methodOrder);
-                        list.forEach((m, i) => {
-                            const r = SPACING * 0.75 * Math.sqrt(i + (list.length > 1 ? 0.5 : 0));
-                            m.position({ x: c.x + r * Math.cos(i * GOLDEN), y: c.y + r * Math.sin(i * GOLDEN) });
-                        });
-                    }));
-                    resolve();
+                const inner = new Map();
+                for (const [mid, ids] of byModule) {
+                    const set = new Set(ids);
+                    const local = await coseCircles(ids.map(id => ({ id, r: radius.get(id) })),
+                        classEdges.filter(([a, b]) => set.has(a) && set.has(b)), { ...classOpts, hub: true, edge: 70, gap: 30 });
+                    const cx = local.reduce((s, c) => s + c.x, 0) / local.length;
+                    const cyy = local.reduce((s, c) => s + c.y, 0) / local.length;
+                    const R = local.reduce((mx, c) => Math.max(mx, Math.hypot(c.x - cx, c.y - cyy) + c.r), 0) + MODULE_PAD;
+                    inner.set(mid, { local, cx, cy: cyy, R });
+                }
+                const moduleEdges = new Set();
+                classEdges.forEach(([a, b]) => {
+                    const ma = moduleOf.get(a), mb = moduleOf.get(b);
+                    if (ma !== mb) moduleEdges.add(ma < mb ? ma + '|' + mb : mb + '|' + ma);
                 });
-                layout.run();
-            });
+                const placed = await coseCircles([...inner].map(([id, v]) => ({ id, r: v.R })),
+                    [...moduleEdges].map(k => k.split('|')),
+                    { repulsion: 200000, edge: 60, spacing: 120, gap: MODULE_GAP, hub: true });
+                circles = [];
+                cy.batch(() => placed.forEach(p => {
+                    const v = inner.get(p.id);
+                    cy.getElementById(p.id).position({ x: p.x, y: p.y }).data('size', v.R * 2);
+                    v.local.forEach(c => circles.push({ id: c.id, x: p.x + c.x - v.cx, y: p.y + c.y - v.cy, r: c.r }));
+                }));
+            }
+
+            cy.batch(() => circles.forEach(c => {
+                const node = cy.getElementById(c.id);
+                node.position({ x: c.x, y: c.y });
+                node.data('size', c.r * 2);
+                const list = (members.get(c.id) || []).sort(methodOrder);
+                list.forEach((m, i) => {
+                    const r = SPACING * 0.75 * Math.sqrt(i + (list.length > 1 ? 0.5 : 0));
+                    m.position({ x: c.x + r * Math.cos(i * GOLDEN), y: c.y + r * Math.sin(i * GOLDEN) });
+                });
+            }));
         }
+
+        // modules carry their classes and methods when dragged
+        let moduleDrag = null;
+        cy.on('grab', 'node[type="module"]', e => { moduleDrag = { ...e.target.position() }; });
+        cy.on('drag', 'node[type="module"]', e => {
+            if (!moduleDrag) return;
+            const p = e.target.position(), dx = p.x - moduleDrag.x, dy = p.y - moduleDrag.y;
+            moduleDrag = { ...p };
+            const mod = e.target.data('mod');
+            cy.batch(() => cy.nodes(`[type="class"][mod = ${mod}]`).forEach(c => {
+                const q = c.position(); c.position({ x: q.x + dx, y: q.y + dy });
+                cy.nodes(`[type="method"][cls = ${c.data('cls')}]`).forEach(m => {
+                    const r = m.position(); m.position({ x: r.x + dx, y: r.y + dy });
+                });
+            }));
+        });
+        cy.on('free', 'node[type="module"]', () => { moduleDrag = null; });
 
         // spheres carry their methods when dragged
         let dragFrom = null;
@@ -855,6 +954,8 @@
             cy.batch(() => {
                 cy.elements().removeClass('hl focus dim-trace').addClass('faded');
                 lit.removeClass('faded').addClass('hl');
+                const litModules = new Set(methodIds.map(m => G.classModule[classOf(m)]));
+                cy.nodes('[type="module"]').forEach(n => { n.removeClass('faded'); if (litModules.has(n.data('mod'))) n.addClass('hl'); });
                 focusIds.forEach(m => cy.getElementById('m' + m).addClass('focus'));
             });
             const fitNodes = cy.collection(fitIds.map(m => cy.getElementById('m' + m)));
@@ -879,7 +980,9 @@
         cy.on('mouseover', 'node', e => {
             const n = e.target;
             tip.replaceChildren();
-            if (n.data('type') === 'method') {
+            if (n.data('type') === 'module') {
+                tip.append(el('div', null, n.data('label')), el('div', 'where', 'Maven module · drag to move, click to zoom'));
+            } else if (n.data('type') === 'method') {
                 const m = n.data('mid');
                 tip.append(el('div', null, methodLabel(m)), el('div', 'where', classFqn(classOf(m))));
             } else {
@@ -1878,6 +1981,7 @@
             closeResults();
             if (t === cy) { if (fullMode && lastSelection) reset(); return; }
             if (!t.isNode()) return;
+            if (t.data('type') === 'module') { fitVisible(t, drawer.classList.contains('open'), 40); return; }
             if (t.data('type') === 'method') selectMethods([t.data('mid')]);
             else selectClass(t.data('cls'));
         });
@@ -1924,6 +2028,10 @@
                 const i = el('i'); i.style.background = st.color; i.style.color = st.color;
                 const span = el('span'); span.append(i, document.createTextNode(st.label)); legend.appendChild(span);
             });
+            if (G.modules.length > 1) {
+                const ring = el('i'); ring.style.cssText = 'background:transparent;border:1.5px dashed #38bdf8;box-shadow:none';
+                const ms = el('span'); ms.append(ring, document.createTextNode('Module')); legend.appendChild(ms);
+            }
             const entry = el('i', 'diamond'); entry.style.background = '#f43f5e'; entry.style.color = '#f43f5e';
             const es = el('span'); es.append(entry, document.createTextNode('Entry point')); legend.appendChild(es);
             if (G.impact) {
